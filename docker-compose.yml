@@ -1,0 +1,10 @@
+version: "3.3"
+
+services:
+  database:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    ports:
+      - 1433:1433 # Default MSSQL Port
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: testPassword@
