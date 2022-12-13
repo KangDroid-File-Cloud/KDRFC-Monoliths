@@ -32,7 +32,8 @@ builder.Services.AddSwaggerGen(options =>
 
     foreach (var eachList in includedList)
     {
-        options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, eachList));
+        var path = Path.Combine(AppContext.BaseDirectory, eachList);
+        if (Path.Exists(path)) options.IncludeXmlComments(path);
     }
 });
 builder.Services.AddSwaggerGenNewtonsoftSupport();
