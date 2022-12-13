@@ -35,6 +35,7 @@ builder.Services.AddSwaggerGen(options =>
         options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, eachList));
     }
 });
+builder.Services.AddSwaggerGenNewtonsoftSupport();
 
 var app = builder.Build();
 
