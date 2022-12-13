@@ -1,0 +1,60 @@
+name: Test, Deploy to Container Registry
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  PROJECT_NAME: "KangDroid-File-Cloud"
+  PROJECT_DIRECTORY: "src/ApiHost"
+
+jobs:
+  build_test:
+    name: Build/Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup .NET 7.0.x
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 7.0.x
+
+      - name: Restore ${{ env.PROJECT_NAME }}
+        run: dotnet restore
+
+      - name: Dotnet Test ${{ env.PROJECT_NAME }}
+        run: dotnet test --no-restore
+
+  deploy_registry:
+    name: Deploy project to registry
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout to test-server
+        uses: actions/checkout@v3
+
+      - name: Set Image Tag to Environment Variables
+        run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Initialize Docker BuildX
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to ACR
+        uses: docker/login-action@v2.1.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build, Push to Registry
+        uses: docker/build-push-action@v3.2.0
+        with:
+          context: ./src
+          file: ${{ env.PROJECT_DIRECTORY }}/Dockerfile
+          push: true
+          tags: kangdroid/kdrfc:${{ env.IMAGE_TAG }},kangdroid/kdrfc:main
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
