@@ -1,11 +1,13 @@
 using Modules.Account.Extensions;
 using Modules.Account.Infrastructure.Extensions;
+using Shared.Core.Extensions;
 using Shared.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddSharedInfrastructure(builder.Configuration);
+builder.Services.AddSharedCoreServices();
 
 // Add Account Module
 builder.Services.AddAccountModule(builder.Configuration);

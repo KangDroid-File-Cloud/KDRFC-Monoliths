@@ -1,8 +1,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Shared.Core.Abstractions;
 using Shared.Infrastructure.Controllers;
 using Shared.Infrastructure.Filters;
+using Shared.Infrastructure.Persistence;
+using StackExchange.Redis;
 
 namespace Shared.Infrastructure.Extensions;
 
@@ -41,6 +44,11 @@ public static class ServiceCollectionExtension
             }
         });
         serviceCollection.AddSwaggerGenNewtonsoftSupport();
+
+        // Add Redis Cache
+        serviceCollection.AddSingleton<IConnectionMultiplexer>(
+            ConnectionMultiplexer.Connect(configuration.GetConnectionString("CacheConnection")));
+        serviceCollection.AddSingleton<ICacheService, CacheService>();
         return serviceCollection;
     }
 }

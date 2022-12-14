@@ -6,6 +6,7 @@ namespace Shared.Test.Fixtures;
 public class SharedContainerFixtures : IDisposable
 {
     public readonly TestcontainersContainer AzureSqlContainer;
+    public readonly RedisTestcontainer RedisTestcontainer;
 
     public SharedContainerFixtures()
     {
@@ -25,12 +26,25 @@ public class SharedContainerFixtures : IDisposable
                             .WithWaitStrategy(Wait.ForUnixContainer()
                                                   .UntilMessageIsLogged(consumer.Stdout, "EdgeTelemetry starting up"))
                             .Build();
-        AzureSqlContainer.StartAsync().Wait();
+        RedisTestcontainer = new TestcontainersBuilder<RedisTestcontainer>()
+                             .WithName($"REDIS-{Guid.NewGuid():D}")
+                             .WithImage("redis:7")
+                             .WithPortBinding(6379, true)
+                             .Build();
+
+        var taskList = new List<Task>
+        {
+            AzureSqlContainer.StartAsync(),
+            RedisTestcontainer.StartAsync()
+        };
+        Task.WhenAll(taskList).Wait();
     }
 
     public void Dispose()
     {
         AzureSqlContainer.DisposeAsync()
                          .GetAwaiter().GetResult();
+        RedisTestcontainer.DisposeAsync()
+                          .GetAwaiter().GetResult();
     }
 }

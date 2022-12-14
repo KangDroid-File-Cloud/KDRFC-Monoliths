@@ -2,8 +2,12 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Modules.Account.Core.Abstractions;
 using Modules.Account.Core.Commands;
+using Modules.Account.Core.Extensions;
 using Modules.Account.Core.Models.Data;
+using Modules.Account.Core.Models.Responses;
+using Shared.Core.Abstractions;
 using Shared.Core.Exceptions;
+using Shared.Core.Services;
 
 namespace Modules.Account.Core.Services.Authentication;
 
@@ -13,10 +17,14 @@ namespace Modules.Account.Core.Services.Authentication;
 public class SelfAuthenticationService : IAuthenticationService
 {
     private readonly IAccountDbContext _accountDbContext;
+    private readonly ICacheService _cacheService;
+    private readonly IJwtService _jwtService;
 
-    public SelfAuthenticationService(IAccountDbContext accountDbContext)
+    public SelfAuthenticationService(IAccountDbContext accountDbContext, IJwtService jwtService, ICacheService cacheService)
     {
         _accountDbContext = accountDbContext;
+        _jwtService = jwtService;
+        _cacheService = cacheService;
     }
 
     /// <summary>
@@ -38,15 +46,17 @@ public class SelfAuthenticationService : IAuthenticationService
                 $"Cannot register new user: {registerAccountCommand.Email} with {registerAccountCommand.AuthenticationProvider.ToString()} already exists!");
         }
 
+        var id = Guid.NewGuid().ToString();
         var account = new Models.Data.Account
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = id,
             NickName = registerAccountCommand.Nickname,
             Email = registerAccountCommand.Email,
             Credentials = new List<Credential>
             {
                 new()
                 {
+                    UserId = id,
                     AuthenticationProvider = registerAccountCommand.AuthenticationProvider,
                     ProviderId = registerAccountCommand.Email,
                     Key = registerAccountCommand.AuthCode
@@ -57,5 +67,39 @@ public class SelfAuthenticationService : IAuthenticationService
         await _accountDbContext.SaveChangesAsync(default);
 
         return account;
+    }
+
+    public async Task<AccessTokenResponse> LoginAsync(LoginCommand loginCommand)
+    {
+        // Find Credential
+        var credential = await _accountDbContext.Credentials
+                                                .Include(a => a.Account)
+                                                .Where(a => a.AuthenticationProvider == loginCommand.AuthenticationProvider &&
+                                                            a.ProviderId == loginCommand.Email)
+                                                .FirstOrDefaultAsync() ??
+                         throw new ApiException(HttpStatusCode.Unauthorized,
+                             "Login failed: Please check login information again.");
+
+        // Self-Provider: Verify Password (TODO: Hash)
+        if (credential.Key != loginCommand.AuthCode)
+            throw new ApiException(HttpStatusCode.Unauthorized, "Login failed: Please check login information again.");
+
+        // Create JWT
+        var jwt = _jwtService.GenerateAccessToken(credential.Account, credential.AuthenticationProvider);
+
+        // Create Refresh Token
+        var refreshToken = new RefreshToken
+        {
+            UserId = credential.UserId,
+            Token = _jwtService.GenerateJwt(null, DateTime.UtcNow.AddDays(14))
+        };
+        await _cacheService.SetItemAsync(AccountCacheKeys.RefreshTokenKey(refreshToken.Token), refreshToken,
+            TimeSpan.FromDays(14));
+
+        return new AccessTokenResponse
+        {
+            AccessToken = jwt,
+            RefreshToken = refreshToken.Token
+        };
     }
 }

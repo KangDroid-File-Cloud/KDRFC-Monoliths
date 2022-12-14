@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Account.Core.Commands;
+using Modules.Account.Core.Models.Responses;
 using Shared.Models.Responses;
 
 namespace Modules.Account.Controllers;
@@ -31,5 +32,20 @@ public class AccountController : ControllerBase
     {
         await _mediator.Send(command);
         return NoContent();
+    }
+
+    /// <summary>
+    ///     Login to KDRFC Service.
+    /// </summary>
+    /// <param name="command">Login Request Command(Login Request Body)</param>
+    /// <returns></returns>
+    /// <response code="200">When user successfully logged-in.</response>
+    /// <response code="401">When user's credential information is not correct.</response>
+    [HttpPost("login")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccessTokenResponse))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+    public async Task<ActionResult<AccessTokenResponse>> LoginAccount(LoginCommand command)
+    {
+        return Ok(await _mediator.Send(command));
     }
 }
