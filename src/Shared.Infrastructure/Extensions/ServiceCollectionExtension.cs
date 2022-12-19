@@ -40,7 +40,7 @@ public static class ServiceCollectionExtension
             foreach (var eachList in includedList)
             {
                 var path = Path.Combine(AppContext.BaseDirectory, eachList);
-                if (Path.Exists(path)) options.IncludeXmlComments(path);
+                if (File.Exists(path)) options.IncludeXmlComments(path);
             }
         });
         serviceCollection.AddSwaggerGenNewtonsoftSupport();
