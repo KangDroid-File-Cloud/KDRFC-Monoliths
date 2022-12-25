@@ -3,7 +3,6 @@ using Modules.Account.Infrastructure.Extensions;
 using Modules.Account.Infrastructure.Persistence;
 using Shared.Core.Extensions;
 using Shared.Infrastructure.Extensions;
-using Shared.Infrastructure.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +19,6 @@ builder.Services.AddHealthChecks()
        .AddRedis(builder.Configuration.GetConnectionString("CacheConnection")!);
 
 var app = builder.Build();
-
-app.UseMiddleware<ResponseInterceptorMiddleware>();
 
 // Migrate Account Module Database
 app.MigrateAccountModuleDatabase();
