@@ -1,0 +1,28 @@
+version: "3.3"
+
+services:
+  database:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: testPassword@
+  redis:
+    image: redis:7
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - "./prometheus.yaml:/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+  kdrfc-api:
+    build:
+      context: ../src
+      dockerfile: ../src/ApiHost/Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "LocalContainer"
+    depends_on:
+      - redis
+      - database
+      - prometheus
