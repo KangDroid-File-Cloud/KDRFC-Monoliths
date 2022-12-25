@@ -1,6 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using Shared.Core.Abstractions;
 using Shared.Infrastructure.Controllers;
 using Shared.Infrastructure.Filters;
@@ -49,6 +52,21 @@ public static class ServiceCollectionExtension
         serviceCollection.AddSingleton<IConnectionMultiplexer>(
             ConnectionMultiplexer.Connect(configuration.GetConnectionString("CacheConnection")));
         serviceCollection.AddSingleton<ICacheService, CacheService>();
+
+        // Add Metrics
+        serviceCollection.AddOpenTelemetry()
+                         .WithMetrics(builder =>
+                         {
+                             builder
+                                 .AddMeter("KDRFC")
+                                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("KDRFC"))
+                                 .AddRuntimeInstrumentation()
+                                 .AddConsoleExporter()
+                                 .AddHttpClientInstrumentation()
+                                 .AddAspNetCoreInstrumentation()
+                                 .AddPrometheusExporter();
+                         })
+                         .StartWithHost();
         return serviceCollection;
     }
 }
