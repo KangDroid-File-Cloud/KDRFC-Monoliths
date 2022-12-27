@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Responses;
+using Shared.Infrastructure.Extensions;
+using Shared.Infrastructure.Filters;
 using Shared.Models.Responses;
 
 namespace Modules.Account.Controllers;
@@ -47,5 +49,25 @@ public class AccountController : ControllerBase
     public async Task<ActionResult<AccessTokenResponse>> LoginAccount(LoginCommand command)
     {
         return Ok(await _mediator.Send(command));
+    }
+
+    /// <summary>
+    ///     Dropout(Remove) account
+    /// </summary>
+    /// <returns></returns>
+    /// <response code="204">When successfully dropped out user's account.</response>
+    /// <response code="401">When authorization failed.</response>
+    [HttpDelete("dropout")]
+    [KDRFCAuthorization]
+    public async Task<IActionResult> DropoutAccount()
+    {
+        var userId = HttpContext.GetUserId()!;
+
+        // Send to Mediator
+        await _mediator.Send(new DropoutUserByIdCommand
+        {
+            UserId = userId
+        });
+        return NoContent();
     }
 }

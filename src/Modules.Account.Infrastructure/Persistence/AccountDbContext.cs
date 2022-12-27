@@ -20,6 +20,15 @@ public class AccountDbContext : ModuleDatabaseContext, IAccountDbContext
     {
         modelBuilder.Entity<Core.Models.Data.Account>()
                     .HasKey(a => a.Id);
+        modelBuilder.Entity<Core.Models.Data.Account>()
+                    .HasQueryFilter(a => !a.IsDeleted);
+        modelBuilder.Entity<Core.Models.Data.Account>()
+                    .HasIndex(a => new
+                    {
+                        a.Id,
+                        a.IsDeleted
+                    });
+
         modelBuilder.Entity<Credential>()
                     .HasKey(a =>
                         new

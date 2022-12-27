@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Modules.Account.Core.Abstractions;
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
+using Modules.Account.Core.Models.Responses;
 using Shared.Test.Fixtures;
 using Xunit;
 
@@ -50,6 +52,50 @@ public class AccountApiTest : IDisposable
     public void Dispose()
     {
         _webApplicationFactory.Dispose();
+    }
+
+    private async Task<Core.Models.Data.Account> CreateAccountAsync()
+    {
+        var id = Guid.NewGuid().ToString();
+        var account = new Core.Models.Data.Account
+        {
+            Id = id,
+            Email = "kangdroid@test.com",
+            NickName = "KangDroid",
+            Credentials = new List<Credential>
+            {
+                new()
+                {
+                    UserId = id,
+                    AuthenticationProvider = AuthenticationProvider.Self,
+                    ProviderId = "kangdroid@test.com",
+                    Key = "testPassword@"
+                }
+            }
+        };
+
+        await using var scope = _webApplicationFactory.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetService<IAccountDbContext>();
+        dbContext.Accounts.Add(account);
+        await dbContext.SaveChangesAsync(default);
+
+        return account;
+    }
+
+    private async Task<string> LoginAsync(HttpClient httpClient, Credential credential)
+    {
+        var loginRequest = new LoginCommand
+        {
+            AuthenticationProvider = credential.AuthenticationProvider,
+            Email = credential.ProviderId,
+            AuthCode = credential.Key!
+        };
+        var response = await httpClient.PostAsJsonAsync("/api/account/login", loginRequest);
+
+        // Check
+        var accessTokenResponse = await response.Content.ReadFromJsonAsync<AccessTokenResponse>();
+
+        return accessTokenResponse!.AccessToken;
     }
 
     [Fact(DisplayName = "POST /api/account/join: Join should return 204 NoContent")]
@@ -142,5 +188,52 @@ public class AccountApiTest : IDisposable
         // Check
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact(DisplayName = "DELETE /api/account/dropout: Dropout should return 401 when access token does not exists.")]
+    public async Task Is_Delete_Returns_401_When_AccessToken_Not_Exists()
+    {
+        // Let: N/A
+        var httpClient = _webApplicationFactory.CreateClient();
+
+        // Do
+        var response = await httpClient.DeleteAsync("api/account/dropout");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact(DisplayName = "DELETE /api/account/dropout: Dropout should return 401 when access token malformed.")]
+    public async Task Is_Delete_Returns_401_When_AccessToken_Malformed()
+    {
+        // Let: N/A
+        var httpClient = _webApplicationFactory.CreateClient();
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "asdffdsasdf");
+        var response = await httpClient.DeleteAsync("api/account/dropout");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact(DisplayName =
+        "DELETE /api/account/dropout: Dropout should return 204 NoContent when account dropout successfully handled.")]
+    public async Task Is_Delete_Returns_204_Ok_When_Successfully_Handled()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var account = await CreateAccountAsync();
+        var accessToken = await LoginAsync(httpClient, account.Credentials.First());
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await httpClient.DeleteAsync("api/account/dropout");
+
+        // Check
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 }
