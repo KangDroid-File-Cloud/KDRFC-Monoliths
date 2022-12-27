@@ -46,7 +46,7 @@ public class SelfAuthenticationService : IAuthenticationService
                 $"Cannot register new user: {registerAccountCommand.Email} with {registerAccountCommand.AuthenticationProvider.ToString()} already exists!");
         }
 
-        var id = Guid.NewGuid().ToString();
+        var id = Ulid.NewUlid().ToString();
         var account = new Models.Data.Account
         {
             Id = id,

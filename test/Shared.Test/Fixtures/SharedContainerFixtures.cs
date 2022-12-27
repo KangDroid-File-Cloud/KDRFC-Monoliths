@@ -14,7 +14,7 @@ public class SharedContainerFixtures : IDisposable
         using var stdErrStream = new MemoryStream();
         using var consumer = Consume.RedirectStdoutAndStderrToStream(stdOutStream, stdErrStream);
         AzureSqlContainer = new TestcontainersBuilder<TestcontainersContainer>()
-                            .WithName($"AZURE-SQL-{Guid.NewGuid():D}")
+                            .WithName($"AZURE-SQL-{Ulid.NewUlid().ToString()}")
                             .WithImage("mcr.microsoft.com/azure-sql-edge")
                             .WithPortBinding("1433", true)
                             .WithEnvironment(new Dictionary<string, string>
@@ -27,7 +27,7 @@ public class SharedContainerFixtures : IDisposable
                                                   .UntilMessageIsLogged(consumer.Stdout, "EdgeTelemetry starting up"))
                             .Build();
         RedisTestcontainer = new TestcontainersBuilder<RedisTestcontainer>()
-                             .WithName($"REDIS-{Guid.NewGuid():D}")
+                             .WithName($"REDIS-{Ulid.NewUlid()}")
                              .WithImage("redis:7")
                              .WithPortBinding(6379, true)
                              .Build();

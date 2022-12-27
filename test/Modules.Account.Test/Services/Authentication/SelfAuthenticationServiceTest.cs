@@ -25,7 +25,7 @@ public class SelfAuthenticationServiceTest
     public SelfAuthenticationServiceTest()
     {
         _accountDbContext = new AccountDbContext(new DbContextOptionsBuilder<AccountDbContext>()
-                                                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                                                 .UseInMemoryDatabase(Ulid.NewUlid().ToString())
                                                  .Options);
         _mockJwtService = new Mock<IJwtService>();
         _mockCacheService = new Mock<ICacheService>();
@@ -71,7 +71,7 @@ public class SelfAuthenticationServiceTest
     public async Task Is_CreateAccountAsync_Throws_ApiException_When_Already_Registered()
     {
         // Let
-        var accountId = Guid.NewGuid().ToString();
+        var accountId = Ulid.NewUlid().ToString();
         var account = new Core.Models.Data.Account
         {
             Id = accountId,
@@ -131,7 +131,7 @@ public class SelfAuthenticationServiceTest
     public async Task Is_LoginAsync_Throws_ApiException_With_Unauthorized_When_Credential_Does_Not_Matches()
     {
         // Let
-        var accountId = Guid.NewGuid().ToString();
+        var accountId = Ulid.NewUlid().ToString();
         var account = new Core.Models.Data.Account
         {
             Id = accountId,
@@ -168,7 +168,7 @@ public class SelfAuthenticationServiceTest
     public async Task Is_LoginAsync_Generates_Jwt_RefreshToken_Well()
     {
         // Let
-        var accountId = Guid.NewGuid().ToString();
+        var accountId = Ulid.NewUlid().ToString();
         var account = new Core.Models.Data.Account
         {
             Id = accountId,

@@ -21,7 +21,7 @@ public class AccountApiTest : IDisposable
     {
         AuthenticationProvider = AuthenticationProvider.Self,
         Email = "kangdroid@test.com",
-        AuthCode = Guid.NewGuid().ToString(),
+        AuthCode = Ulid.NewUlid().ToString(),
         Nickname = "KangDroid"
     };
 
@@ -34,7 +34,7 @@ public class AccountApiTest : IDisposable
         var configurationStore = new Dictionary<string, string>
         {
             ["ConnectionStrings:DatabaseConnection"] =
-                $"Data Source=tcp:localhost,{dbConnectionPort};Initial Catalog={Guid.NewGuid().ToString()};User Id=SA;Password=testPassword@;Encrypt=False",
+                $"Data Source=tcp:localhost,{dbConnectionPort};Initial Catalog={Ulid.NewUlid().ToString()};User Id=SA;Password=testPassword@;Encrypt=False",
             ["ConnectionStrings:CacheConnection"] = $"localhost:{redisConnectionPort},abortConnect=False",
             ["JwtSecurityKey"] = "adsfasdfasdfasdfasdfasdfafdsdafs"
         };
@@ -56,7 +56,7 @@ public class AccountApiTest : IDisposable
 
     private async Task<Core.Models.Data.Account> CreateAccountAsync()
     {
-        var id = Guid.NewGuid().ToString();
+        var id = Ulid.NewUlid().ToString();
         var account = new Core.Models.Data.Account
         {
             Id = id,
@@ -154,7 +154,7 @@ public class AccountApiTest : IDisposable
     {
         // Let
         var httpClient = _webApplicationFactory.CreateClient();
-        var id = Guid.NewGuid().ToString();
+        var id = Ulid.NewUlid().ToString();
         var account = new Core.Models.Data.Account
         {
             Id = id,

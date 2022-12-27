@@ -17,7 +17,7 @@ public class DropoutAccountByIdCommandHandlerTest
     public DropoutAccountByIdCommandHandlerTest()
     {
         var option = new DbContextOptionsBuilder<AccountDbContext>()
-                     .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                     .UseInMemoryDatabase(Ulid.NewUlid().ToString())
                      .Options;
         _accountDbContext = new AccountDbContext(option);
         _commandHandler = new DropoutAccountByIdCommandHandler(_accountDbContext);
@@ -25,7 +25,7 @@ public class DropoutAccountByIdCommandHandlerTest
 
     private async Task<Core.Models.Data.Account> CreateAccountAsync()
     {
-        var id = Guid.NewGuid().ToString();
+        var id = Ulid.NewUlid().ToString();
         var account = new Core.Models.Data.Account
         {
             Id = id,
@@ -56,7 +56,7 @@ public class DropoutAccountByIdCommandHandlerTest
         // Let
         var request = new DropoutUserByIdCommand
         {
-            UserId = Guid.NewGuid().ToString()
+            UserId = Ulid.NewUlid().ToString()
         };
 
         // Do
