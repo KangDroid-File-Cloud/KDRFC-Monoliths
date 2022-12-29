@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using Modules.Account.Core.Commands;
 
-namespace Modules.Account.Test.Extensions;
+namespace Shared.Test.Extensions;
 
 public static class TestHttpClientExtensions
 {

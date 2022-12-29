@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Models.Responses;
-using Modules.Account.Test.Extensions;
+using Shared.Test.Extensions;
 using Shared.Test.Fixtures;
 using Xunit;
 

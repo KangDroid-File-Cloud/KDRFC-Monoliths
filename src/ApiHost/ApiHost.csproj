@@ -28,6 +28,7 @@
     
     <ItemGroup>
         <InternalsVisibleTo Include="Modules.Account.Test" />
+        <InternalsVisibleTo Include="Modules.Storage.Test" />
     </ItemGroup>
 
     <PropertyGroup>
