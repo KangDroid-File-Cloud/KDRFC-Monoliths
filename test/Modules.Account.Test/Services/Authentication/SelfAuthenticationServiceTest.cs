@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Modules.Account.Core.Abstractions;
@@ -20,6 +21,7 @@ public class SelfAuthenticationServiceTest
     private readonly Mock<ICacheService> _mockCacheService;
 
     private readonly Mock<IJwtService> _mockJwtService;
+    private readonly Mock<IMediator> _mockMediator;
     private readonly SelfAuthenticationService _selfAuthenticationService;
 
     public SelfAuthenticationServiceTest()
@@ -29,8 +31,10 @@ public class SelfAuthenticationServiceTest
                                                  .Options);
         _mockJwtService = new Mock<IJwtService>();
         _mockCacheService = new Mock<ICacheService>();
+        _mockMediator = new Mock<IMediator>();
         _selfAuthenticationService =
-            new SelfAuthenticationService(_accountDbContext, _mockJwtService.Object, _mockCacheService.Object);
+            new SelfAuthenticationService(_accountDbContext, _mockJwtService.Object, _mockCacheService.Object,
+                _mockMediator.Object);
     }
 
     [Fact(DisplayName = "CreateAccountAsync: CreateAccountAsync should register user to database when request is valid.")]
@@ -197,6 +201,8 @@ public class SelfAuthenticationServiceTest
                        .Returns("testJwt");
         _mockJwtService.Setup(a => a.GenerateJwt(null, It.IsAny<DateTime>()))
                        .Returns("RefreshTokenTest");
+        _mockMediator.Setup(a => a.Send(It.IsAny<IRequest<string>>(), It.IsAny<CancellationToken>()))
+                     .ReturnsAsync("rootId");
         _mockCacheService.Setup(a =>
             a.SetItemAsync(AccountCacheKeys.RefreshTokenKey("RefreshTokenTest"), It.IsAny<object>(), It.IsAny<TimeSpan>()));
 
@@ -206,6 +212,7 @@ public class SelfAuthenticationServiceTest
         // Verify
         _mockJwtService.VerifyAll();
         _mockCacheService.VerifyAll();
+        _mockMediator.VerifyAll();
 
         // Check
         Assert.Equal("testJwt", response.AccessToken);

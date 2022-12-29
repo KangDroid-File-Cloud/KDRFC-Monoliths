@@ -4,11 +4,10 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Modules.Account.Core.Abstractions;
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Models.Responses;
+using Modules.Account.Test.Extensions;
 using Shared.Test.Fixtures;
 using Xunit;
 
@@ -57,33 +56,6 @@ public class AccountApiTest : IDisposable
         _webApplicationFactory.Dispose();
     }
 
-    private async Task<Core.Models.Data.Account> CreateAccountAsync()
-    {
-        var id = Ulid.NewUlid().ToString();
-        var account = new Core.Models.Data.Account
-        {
-            Id = id,
-            Email = "kangdroid@test.com",
-            NickName = "KangDroid",
-            Credentials = new List<Credential>
-            {
-                new()
-                {
-                    UserId = id,
-                    AuthenticationProvider = AuthenticationProvider.Self,
-                    ProviderId = "kangdroid@test.com",
-                    Key = "testPassword@"
-                }
-            }
-        };
-
-        await using var scope = _webApplicationFactory.Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetService<IAccountDbContext>();
-        dbContext.Accounts.Add(account);
-        await dbContext.SaveChangesAsync(default);
-
-        return account;
-    }
 
     private async Task<string> LoginAsync(HttpClient httpClient, Credential credential)
     {
@@ -157,32 +129,13 @@ public class AccountApiTest : IDisposable
     {
         // Let
         var httpClient = _webApplicationFactory.CreateClient();
-        var id = Ulid.NewUlid().ToString();
-        var account = new Core.Models.Data.Account
-        {
-            Id = id,
-            Email = "kangdroid@test.com",
-            NickName = "KangDroid",
-            Credentials = new List<Credential>
-            {
-                new()
-                {
-                    UserId = id,
-                    AuthenticationProvider = AuthenticationProvider.Self,
-                    ProviderId = "kangdroid@test.com",
-                    Key = "testPassword@"
-                }
-            }
-        };
-        using var scope = _webApplicationFactory.Services.CreateScope();
-        var accountDbContext = scope.ServiceProvider.GetRequiredService<IAccountDbContext>();
-        accountDbContext.Accounts.Add(account);
-        await accountDbContext.SaveChangesAsync(default);
+        var registerInfo = _registerAccountCommand;
+        await httpClient.CreateAccountAsync(registerInfo);
         var loginRequest = new LoginCommand
         {
             AuthenticationProvider = AuthenticationProvider.Self,
-            Email = "kangdroid@test.com",
-            AuthCode = "testPassword@"
+            Email = registerInfo.Email,
+            AuthCode = registerInfo.AuthCode
         };
 
         // Do
@@ -228,8 +181,16 @@ public class AccountApiTest : IDisposable
     {
         // Let
         var httpClient = _webApplicationFactory.CreateClient();
-        var account = await CreateAccountAsync();
-        var accessToken = await LoginAsync(httpClient, account.Credentials.First());
+        var registerRequest = _registerAccountCommand;
+        await httpClient.CreateAccountAsync(_registerAccountCommand);
+        var loginCommand = new LoginCommand
+        {
+            AuthCode = registerRequest.AuthCode,
+            AuthenticationProvider = AuthenticationProvider.Self,
+            Email = registerRequest.Email
+        };
+        var loginResponse = await httpClient.LoginToAccountAsync(loginCommand);
+        var accessToken = (await loginResponse.Content.ReadFromJsonAsync<AccessTokenResponse>())!.AccessToken;
 
         // Do
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

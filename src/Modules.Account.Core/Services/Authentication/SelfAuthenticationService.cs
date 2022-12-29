@@ -1,4 +1,5 @@
 using System.Net;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Modules.Account.Core.Abstractions;
 using Modules.Account.Core.Commands;
@@ -6,6 +7,7 @@ using Modules.Account.Core.Extensions;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Models.Responses;
 using Shared.Core.Abstractions;
+using Shared.Core.Commands;
 using Shared.Core.Exceptions;
 using Shared.Core.Services;
 
@@ -19,12 +21,15 @@ public class SelfAuthenticationService : IAuthenticationService
     private readonly IAccountDbContext _accountDbContext;
     private readonly ICacheService _cacheService;
     private readonly IJwtService _jwtService;
+    private readonly IMediator _mediator;
 
-    public SelfAuthenticationService(IAccountDbContext accountDbContext, IJwtService jwtService, ICacheService cacheService)
+    public SelfAuthenticationService(IAccountDbContext accountDbContext, IJwtService jwtService, ICacheService cacheService,
+                                     IMediator mediator)
     {
         _accountDbContext = accountDbContext;
         _jwtService = jwtService;
         _cacheService = cacheService;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -84,8 +89,14 @@ public class SelfAuthenticationService : IAuthenticationService
         if (credential.Key != loginCommand.AuthCode)
             throw new ApiException(HttpStatusCode.Unauthorized, "Login failed: Please check login information again.");
 
+        // Get Root
+        var rootId = await _mediator.Send(new GetRootByAccountIdCommand
+        {
+            AccountId = credential.Account.Id
+        });
+
         // Create JWT
-        var jwt = _jwtService.GenerateAccessToken(credential.Account, credential.AuthenticationProvider);
+        var jwt = _jwtService.GenerateAccessToken(credential.Account, credential.AuthenticationProvider, rootId);
 
         // Create Refresh Token
         var refreshToken = new RefreshToken

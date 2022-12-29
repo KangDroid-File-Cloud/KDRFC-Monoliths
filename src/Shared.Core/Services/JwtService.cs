@@ -12,6 +12,7 @@ public static class KDRFCCommonClaimName
     public const string AuthenticationProviderId = "provider";
     public const string Nickname = "nickname";
     public const string Email = "email";
+    public const string RootId = "rootid";
 }
 
 public interface IJwtService

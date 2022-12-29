@@ -7,14 +7,15 @@ namespace Modules.Account.Core.Extensions;
 public static class JwtServiceExtension
 {
     public static string GenerateAccessToken(this IJwtService jwtService, Models.Data.Account account,
-                                             AuthenticationProvider provider)
+                                             AuthenticationProvider provider, string rootId)
     {
         return jwtService.GenerateJwt(new List<Claim>
         {
             new("sub", account.Id),
             new(KDRFCCommonClaimName.AuthenticationProviderId, provider.ToString()),
             new(KDRFCCommonClaimName.Nickname, account.NickName),
-            new(KDRFCCommonClaimName.Email, account.Email)
+            new(KDRFCCommonClaimName.Email, account.Email),
+            new(KDRFCCommonClaimName.RootId, rootId)
         });
     }
 }
