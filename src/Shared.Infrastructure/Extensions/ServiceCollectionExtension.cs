@@ -18,6 +18,7 @@ public static class ServiceCollectionExtension
                                                              IConfiguration configuration)
     {
         serviceCollection.AddControllers(a => a.Filters.Add<GlobalExceptionFilter>())
+                         .AddNewtonsoftJson()
                          .ConfigureApplicationPartManager(manager =>
                              manager.FeatureProviders.Add(new InternalControllerFeatureProvider()));
 
