@@ -38,7 +38,9 @@ public static class ServiceCollectionExtension
             {
                 "ApiHost.xml",
                 "Modules.Account.Core.xml",
-                "Modules.Account.xml"
+                "Modules.Account.xml",
+                "Modules.Storage.xml",
+                "Modules.Storage.Core.xml"
             };
 
             foreach (var eachList in includedList)

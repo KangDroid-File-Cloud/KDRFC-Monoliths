@@ -1,8 +1,11 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Storage.Core.Commands;
+using Modules.Storage.Core.Models.Responses;
 using Shared.Infrastructure.Extensions;
 using Shared.Infrastructure.Filters;
+using Shared.Models.Responses;
 
 namespace Modules.Storage.Controllers;
 
@@ -18,8 +21,17 @@ public class StorageController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    ///     Returns list of folder/file entries with given folder id.
+    /// </summary>
+    /// <param name="folderId">(Required) Folder ID to lookup.</param>
+    /// <returns></returns>
+    /// <response code="200">When successfully got folder's contents.</response>
+    /// <response code="401">When user's credential information is not correct.</response>
     [HttpGet("list")]
     [KDRFCAuthorization]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<BlobProjection>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
     public async Task<IActionResult> ListFolderAsync(string folderId)
     {
         var userId = HttpContext.GetUserId()!;
