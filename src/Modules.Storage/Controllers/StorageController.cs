@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Storage.Core.Commands;
+using Modules.Storage.Core.Models.Requests;
 using Modules.Storage.Core.Models.Responses;
 using Shared.Infrastructure.Extensions;
 using Shared.Infrastructure.Filters;
@@ -40,6 +41,20 @@ public class StorageController : ControllerBase
         {
             AccountId = userId,
             FolderId = folderId
+        }));
+    }
+
+    [HttpPost("folders")]
+    [KDRFCAuthorization]
+    public async Task<IActionResult> CreateFolderAsync(CreateBlobFolderRequest request)
+    {
+        var userId = HttpContext.GetUserId()!;
+
+        return Ok(await _mediator.Send(new CreateBlobFolderCommand
+        {
+            AccountId = userId,
+            ParentFolderId = request.ParentFolderId,
+            FolderName = request.FolderName
         }));
     }
 }

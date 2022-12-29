@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Models.Responses;
+using Modules.Storage.Core.Models.Requests;
 using Shared.Core.Services;
 using Shared.Test.Extensions;
 using Shared.Test.Fixtures;
@@ -89,6 +90,36 @@ public class StorageControllerTest : IDisposable
         // Do
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         var response = await httpClient.GetAsync($"/api/storage/list?folderId={userInformation.RootId}");
+
+        // Check
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact(DisplayName = "POST /api/storage/folders: CreateFolderAsync should return blob(folder) information well.")]
+    public async Task Is_CreateFolderAsync_Returns_Blob_Information_When_Requested()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var registerCommand = _registerAccountCommand;
+        var loginCommand = CreateLoginCommandFromRegister(registerCommand);
+        await httpClient.CreateAccountAsync(registerCommand);
+        var accessToken = (await (await httpClient.LoginToAccountAsync(loginCommand))
+                                 .Content.ReadFromJsonAsync<AccessTokenResponse>())!.AccessToken;
+        var userInformation = new
+        {
+            AccountId = new JwtSecurityToken(accessToken).Claims.First(a => a.Type == JwtRegisteredClaimNames.Sub).Value,
+            RootId = new JwtSecurityToken(accessToken).Claims.First(a => a.Type == KDRFCCommonClaimName.RootId).Value
+        };
+        var request = new CreateBlobFolderRequest
+        {
+            ParentFolderId = userInformation.RootId,
+            FolderName = "KangDroidTest"
+        };
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await httpClient.PostAsJsonAsync("/api/storage/folders", request);
 
         // Check
         Assert.True(response.IsSuccessStatusCode);
