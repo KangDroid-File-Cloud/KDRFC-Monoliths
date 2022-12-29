@@ -33,10 +33,13 @@ public class AccountApiTest : IDisposable
         var redisConnectionPort = containerFixtures.RedisTestcontainer.GetMappedPublicPort(6379);
         var configurationStore = new Dictionary<string, string>
         {
+            ["ConnectionStrings:MongoDbConnection"] =
+                $"mongodb://{containerFixtures.MongoDbContainerConfiguration.Username}:{containerFixtures.MongoDbContainerConfiguration.Password}@localhost:{containerFixtures.MongoDbContainerConfiguration.Port}",
             ["ConnectionStrings:DatabaseConnection"] =
                 $"Data Source=tcp:localhost,{dbConnectionPort};Initial Catalog={Ulid.NewUlid().ToString()};User Id=SA;Password=testPassword@;Encrypt=False",
             ["ConnectionStrings:CacheConnection"] = $"localhost:{redisConnectionPort},abortConnect=False",
-            ["JwtSecurityKey"] = "adsfasdfasdfasdfasdfasdfafdsdafs"
+            ["JwtSecurityKey"] = "adsfasdfasdfasdfasdfasdfafdsdafs",
+            ["MongoDb:DatabaseName"] = Ulid.NewUlid().ToString()
         };
         var configuration = new ConfigurationBuilder()
                             .AddInMemoryCollection(configurationStore)

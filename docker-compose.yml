@@ -12,3 +12,10 @@ services:
     image: redis:7
     ports:
       - 6379:6379
+  mongodb:
+    image: "mongo:latest"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: testPassword
+    ports:
+      - "27017:27017"

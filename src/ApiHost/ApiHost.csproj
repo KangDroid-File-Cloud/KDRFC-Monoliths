@@ -22,6 +22,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Modules.Account\Modules.Account.csproj" />
+      <ProjectReference Include="..\Modules.Storage\Modules.Storage.csproj" />
       <ProjectReference Include="..\Shared.Infrastructure\Shared.Infrastructure.csproj" />
     </ItemGroup>
     

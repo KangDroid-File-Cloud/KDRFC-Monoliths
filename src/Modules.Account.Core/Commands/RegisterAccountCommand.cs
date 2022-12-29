@@ -1,6 +1,7 @@
 using MediatR;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Services;
+using Shared.Core.Commands;
 
 namespace Modules.Account.Core.Commands;
 
@@ -33,10 +34,12 @@ public class RegisterAccountCommand : IRequest
 public class RegisterAccountCommandHandler : IRequestHandler<RegisterAccountCommand>
 {
     private readonly AuthenticationProviderFactory _authenticationProviderFactory;
+    private readonly IMediator _mediator;
 
-    public RegisterAccountCommandHandler(AuthenticationProviderFactory factory)
+    public RegisterAccountCommandHandler(AuthenticationProviderFactory factory, IMediator mediator)
     {
         _authenticationProviderFactory = factory;
+        _mediator = mediator;
     }
 
     public async Task<Unit> Handle(RegisterAccountCommand request, CancellationToken cancellationToken)
@@ -48,7 +51,14 @@ public class RegisterAccountCommandHandler : IRequestHandler<RegisterAccountComm
         };
 
         // Create Account(May throw ApiException)
-        await providerFactory.CreateAccountAsync(request);
+        var account = await providerFactory.CreateAccountAsync(request);
+
+        // Make sure root file system provisioned correctly.
+        await _mediator.Send(new ProvisionRootByIdCommand
+        {
+            AccountId = account.Id
+        }, cancellationToken);
+
         return Unit.Value;
     }
 }

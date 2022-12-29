@@ -14,6 +14,11 @@ services:
       - "./prometheus.yaml:/etc/prometheus/prometheus.yml"
     ports:
       - "9090:9090"
+  mongodb:
+    image: "mongo:latest"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: testPassword
   kdrfc-api:
     build:
       context: ../src

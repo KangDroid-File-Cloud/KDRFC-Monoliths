@@ -1,6 +1,7 @@
 using Modules.Account.Extensions;
 using Modules.Account.Infrastructure.Extensions;
 using Modules.Account.Infrastructure.Persistence;
+using Modules.Storage.Extensions;
 using Shared.Core.Extensions;
 using Shared.Infrastructure.Extensions;
 
@@ -12,6 +13,9 @@ builder.Services.AddSharedCoreServices();
 
 // Add Account Module
 builder.Services.AddAccountModule(builder.Configuration);
+
+// Add Storage Module
+builder.Services.AddStorageModule(builder.Configuration);
 
 // Add Health Check
 builder.Services.AddHealthChecks()

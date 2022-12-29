@@ -1,4 +1,5 @@
 using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 
 namespace Shared.Test.Fixtures;
@@ -6,6 +7,16 @@ namespace Shared.Test.Fixtures;
 public class SharedContainerFixtures : IDisposable
 {
     public readonly TestcontainersContainer AzureSqlContainer;
+
+    public readonly MongoDbTestcontainerConfiguration MongoDbContainerConfiguration = new()
+    {
+        Username = "root",
+        Password = "testPassword",
+        Port = 57544,
+        Database = "admin"
+    };
+
+    public readonly MongoDbTestcontainer MongoDbTestContainer;
     public readonly RedisTestcontainer RedisTestcontainer;
 
     public SharedContainerFixtures()
@@ -26,16 +37,22 @@ public class SharedContainerFixtures : IDisposable
                             .WithWaitStrategy(Wait.ForUnixContainer()
                                                   .UntilMessageIsLogged(consumer.Stdout, "EdgeTelemetry starting up"))
                             .Build();
+
         RedisTestcontainer = new TestcontainersBuilder<RedisTestcontainer>()
                              .WithName($"REDIS-{Ulid.NewUlid()}")
                              .WithImage("redis:7")
                              .WithPortBinding(6379, true)
                              .Build();
 
+        MongoDbTestContainer = new TestcontainersBuilder<MongoDbTestcontainer>()
+                               .WithDatabase(MongoDbContainerConfiguration)
+                               .Build();
+
         var taskList = new List<Task>
         {
             AzureSqlContainer.StartAsync(),
-            RedisTestcontainer.StartAsync()
+            RedisTestcontainer.StartAsync(),
+            MongoDbTestContainer.StartAsync()
         };
         Task.WhenAll(taskList).Wait();
     }
@@ -46,5 +63,7 @@ public class SharedContainerFixtures : IDisposable
                          .GetAwaiter().GetResult();
         RedisTestcontainer.DisposeAsync()
                           .GetAwaiter().GetResult();
+        MongoDbTestContainer.DisposeAsync()
+                            .GetAwaiter().GetResult();
     }
 }
