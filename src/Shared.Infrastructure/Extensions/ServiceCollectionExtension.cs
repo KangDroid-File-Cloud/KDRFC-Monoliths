@@ -62,10 +62,12 @@ public static class ServiceCollectionExtension
                                  .AddMeter("KDRFC")
                                  .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("KDRFC"))
                                  .AddRuntimeInstrumentation()
-                                 .AddConsoleExporter()
                                  .AddHttpClientInstrumentation()
                                  .AddAspNetCoreInstrumentation()
                                  .AddPrometheusExporter();
+
+                             if (Convert.ToBoolean(configuration["EnableConsoleMetricsExporter"]))
+                                 builder.AddConsoleExporter();
                          })
                          .StartWithHost();
         return serviceCollection;

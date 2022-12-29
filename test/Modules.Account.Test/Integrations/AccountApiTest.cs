@@ -38,7 +38,8 @@ public class AccountApiTest : IDisposable
                 $"Data Source=tcp:localhost,{dbConnectionPort};Initial Catalog={Ulid.NewUlid().ToString()};User Id=SA;Password=testPassword@;Encrypt=False",
             ["ConnectionStrings:CacheConnection"] = $"localhost:{redisConnectionPort},abortConnect=False",
             ["JwtSecurityKey"] = "adsfasdfasdfasdfasdfasdfafdsdafs",
-            ["MongoDb:DatabaseName"] = Ulid.NewUlid().ToString()
+            ["MongoDb:DatabaseName"] = Ulid.NewUlid().ToString(),
+            ["EnableConsoleMetricsExporter"] = "false"
         };
         var configuration = new ConfigurationBuilder()
                             .AddInMemoryCollection(configurationStore)
