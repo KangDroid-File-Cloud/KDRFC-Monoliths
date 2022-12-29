@@ -12,7 +12,6 @@ public class SharedContainerFixtures : IDisposable
     {
         Username = "root",
         Password = "testPassword",
-        Port = 57544,
         Database = "admin"
     };
 
@@ -45,6 +44,7 @@ public class SharedContainerFixtures : IDisposable
                              .Build();
 
         MongoDbTestContainer = new TestcontainersBuilder<MongoDbTestcontainer>()
+                               .WithPortBinding("27017", true)
                                .WithDatabase(MongoDbContainerConfiguration)
                                .Build();
 

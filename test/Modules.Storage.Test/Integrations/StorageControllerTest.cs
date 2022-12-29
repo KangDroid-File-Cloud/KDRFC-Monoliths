@@ -32,10 +32,11 @@ public class StorageControllerTest : IDisposable
     {
         var dbConnectionPort = containerFixtures.AzureSqlContainer.GetMappedPublicPort(1433);
         var redisConnectionPort = containerFixtures.RedisTestcontainer.GetMappedPublicPort(6379);
+        var mongoConnectionPort = containerFixtures.MongoDbTestContainer.GetMappedPublicPort(27017);
         var configurationStore = new Dictionary<string, string>
         {
             ["ConnectionStrings:MongoDbConnection"] =
-                $"mongodb://{containerFixtures.MongoDbContainerConfiguration.Username}:{containerFixtures.MongoDbContainerConfiguration.Password}@localhost:{containerFixtures.MongoDbContainerConfiguration.Port}",
+                $"mongodb://{containerFixtures.MongoDbContainerConfiguration.Username}:{containerFixtures.MongoDbContainerConfiguration.Password}@localhost:{mongoConnectionPort}",
             ["ConnectionStrings:DatabaseConnection"] =
                 $"Data Source=tcp:localhost,{dbConnectionPort};Initial Catalog={Ulid.NewUlid().ToString()};User Id=SA;Password=testPassword@;Encrypt=False",
             ["ConnectionStrings:CacheConnection"] = $"localhost:{redisConnectionPort},abortConnect=False",
