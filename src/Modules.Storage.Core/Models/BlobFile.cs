@@ -18,16 +18,19 @@ public class BlobFile
     /// <summary>
     ///     File Owner(Typically UserId)
     /// </summary>
+    [BsonElement("ownerId")]
     public string OwnerId { get; set; }
 
     /// <summary>
     ///     Parent Folder ID
     /// </summary>
+    [BsonElement("parentFolderId")]
     public string ParentFolderId { get; set; }
 
     /// <summary>
     ///     Blob File Type - Might be file or folder.
     /// </summary>
+    [BsonElement("blobFileType")]
     public BlobFileType BlobFileType { get; set; }
 }
 
