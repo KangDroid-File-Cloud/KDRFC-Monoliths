@@ -1,11 +1,11 @@
+using System.Net;
 using MediatR;
 using Modules.Storage.Core.Abstractions;
 using Modules.Storage.Core.Extensions;
 using Modules.Storage.Core.Models;
 using Modules.Storage.Core.Models.Responses;
 using MongoDB.Bson;
-using MongoDB.Driver;
-using MongoDB.Driver.GridFS;
+using Shared.Core.Exceptions;
 
 namespace Modules.Storage.Core.Commands.Handlers;
 
@@ -33,10 +33,8 @@ public class CreateBlobFolderCommandHandler : IRequestHandler<CreateBlobFolderCo
         var fileId = await _gridFsRepository.UploadFileAsync(request.FolderName, metadata, Stream.Null);
 
         // Information
-        var metadataList =
-            await _gridFsRepository.ListFileMetadataAsync(Builders<GridFSFileInfo>.Filter.Eq("_id", new ObjectId(fileId)));
-
-        // Should have single entity though.
-        return metadataList.Select(a => a.ToBlobProjection()).First();
+        return (await _gridFsRepository.GetFileById(fileId))?.ToBlobProjection() ??
+               throw new ApiException(HttpStatusCode.InternalServerError,
+                   "File uploaded but cannot find uploaded file on server!");
     }
 }

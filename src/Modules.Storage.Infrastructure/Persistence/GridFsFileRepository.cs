@@ -30,6 +30,13 @@ public class GridFsFileRepository<TMetadata> : IGridFsRepository<TMetadata>
         return await asyncCursor.ToListAsync();
     }
 
+    public async Task<GridFSFileInfo?> GetFileById(string id)
+    {
+        using var asyncCursor = await _gridFsBucket.FindAsync(Builders<GridFSFileInfo>.Filter.Eq("_id", new ObjectId(id)));
+
+        return await asyncCursor.FirstOrDefaultAsync();
+    }
+
     public async Task DeleteManyAsync(FilterDefinition<GridFSFileInfo> filter)
     {
         var taskList = new List<Task>();
