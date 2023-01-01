@@ -9,6 +9,7 @@ using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Models.Responses;
 using Modules.Storage.Core.Models.Requests;
+using MongoDB.Bson;
 using Shared.Core.Services;
 using Shared.Test.Extensions;
 using Shared.Test.Fixtures;
@@ -94,6 +95,32 @@ public class StorageControllerTest : IDisposable
         // Check
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact(DisplayName =
+        "POST /api/storage/folders: CreateFolderAsync should return 404 Not Found when parent folder is not found.")]
+    public async Task Is_CreateFolderAsync_Returns_NotFound_When_ParentFolder_Not_Found()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var registerCommand = _registerAccountCommand;
+        var loginCommand = CreateLoginCommandFromRegister(registerCommand);
+        await httpClient.CreateAccountAsync(registerCommand);
+        var accessToken = (await (await httpClient.LoginToAccountAsync(loginCommand))
+                                 .Content.ReadFromJsonAsync<AccessTokenResponse>())!.AccessToken;
+        var request = new CreateBlobFolderRequest
+        {
+            ParentFolderId = ObjectId.Empty.ToString(),
+            FolderName = "KangDroidTest"
+        };
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await httpClient.PostAsJsonAsync("/api/storage/folders", request);
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact(DisplayName = "POST /api/storage/folders: CreateFolderAsync should return blob(folder) information well.")]

@@ -51,6 +51,7 @@ public class StorageController : ControllerBase
     /// <returns></returns>
     /// <response code="200">When successfully create blob folder on parent.</response>
     /// <response code="401">When user's credential information is not correct.</response>
+    /// <response code="404">When parent folder is NOT Found.</response>
     [HttpPost("folders")]
     [KDRFCAuthorization]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BlobProjection))]
