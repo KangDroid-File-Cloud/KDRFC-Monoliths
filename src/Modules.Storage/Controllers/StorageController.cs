@@ -44,8 +44,17 @@ public class StorageController : ControllerBase
         }));
     }
 
+    /// <summary>
+    ///     Create Folder under parent folder.
+    /// </summary>
+    /// <param name="request">Create Blob Folder Request. See schemas below.</param>
+    /// <returns></returns>
+    /// <response code="200">When successfully create blob folder on parent.</response>
+    /// <response code="401">When user's credential information is not correct.</response>
     [HttpPost("folders")]
     [KDRFCAuthorization]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BlobProjection))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
     public async Task<IActionResult> CreateFolderAsync(CreateBlobFolderRequest request)
     {
         var userId = HttpContext.GetUserId()!;
