@@ -5,9 +5,6 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
-using Modules.Account.Core.Commands;
-using Modules.Account.Core.Models.Data;
-using Modules.Account.Core.Models.Responses;
 using Modules.Storage.Core.Models.Requests;
 using MongoDB.Bson;
 using Shared.Core.Services;
@@ -20,14 +17,6 @@ namespace Modules.Storage.Test.Integrations;
 [Collection("Container")]
 public class StorageControllerTest : IDisposable
 {
-    private readonly RegisterAccountCommand _registerAccountCommand = new()
-    {
-        AuthenticationProvider = AuthenticationProvider.Self,
-        Email = "kangdroid@test.com",
-        AuthCode = Ulid.NewUlid().ToString(),
-        Nickname = "KangDroid"
-    };
-
     private readonly WebApplicationFactory<Program> _webApplicationFactory;
 
     public StorageControllerTest(SharedContainerFixtures containerFixtures)
@@ -62,26 +51,14 @@ public class StorageControllerTest : IDisposable
         _webApplicationFactory.Dispose();
     }
 
-    private LoginCommand CreateLoginCommandFromRegister(RegisterAccountCommand command)
-    {
-        return new LoginCommand
-        {
-            AuthenticationProvider = command.AuthenticationProvider,
-            Email = command.Email,
-            AuthCode = command.AuthCode
-        };
-    }
-
     [Fact(DisplayName = "GET /api/storage: ListFolderAsync should return list of files when requested.")]
     public async Task Is_ListFolderAsync_Returns_List_Of_Files_When_Executed()
     {
         // Let
         var httpClient = _webApplicationFactory.CreateClient();
-        var registerCommand = _registerAccountCommand;
-        var loginCommand = CreateLoginCommandFromRegister(registerCommand);
-        await httpClient.CreateAccountAsync(registerCommand);
-        var accessToken = (await (await httpClient.LoginToAccountAsync(loginCommand))
-                                 .Content.ReadFromJsonAsync<AccessTokenResponse>())!.AccessToken;
+        var testUser = await httpClient.CreateTestUser();
+        var accessToken = testUser.AccessToken.AccessToken;
+
         var userInformation = new
         {
             AccountId = new JwtSecurityToken(accessToken).Claims.First(a => a.Type == JwtRegisteredClaimNames.Sub).Value,
@@ -103,11 +80,9 @@ public class StorageControllerTest : IDisposable
     {
         // Let
         var httpClient = _webApplicationFactory.CreateClient();
-        var registerCommand = _registerAccountCommand;
-        var loginCommand = CreateLoginCommandFromRegister(registerCommand);
-        await httpClient.CreateAccountAsync(registerCommand);
-        var accessToken = (await (await httpClient.LoginToAccountAsync(loginCommand))
-                                 .Content.ReadFromJsonAsync<AccessTokenResponse>())!.AccessToken;
+        var testUser = await httpClient.CreateTestUser();
+        var accessToken = testUser.AccessToken.AccessToken;
+
         var request = new CreateBlobFolderRequest
         {
             ParentFolderId = ObjectId.Empty.ToString(),
@@ -128,11 +103,9 @@ public class StorageControllerTest : IDisposable
     {
         // Let
         var httpClient = _webApplicationFactory.CreateClient();
-        var registerCommand = _registerAccountCommand;
-        var loginCommand = CreateLoginCommandFromRegister(registerCommand);
-        await httpClient.CreateAccountAsync(registerCommand);
-        var accessToken = (await (await httpClient.LoginToAccountAsync(loginCommand))
-                                 .Content.ReadFromJsonAsync<AccessTokenResponse>())!.AccessToken;
+        var testUser = await httpClient.CreateTestUser();
+        var accessToken = testUser.AccessToken.AccessToken;
+
         var userInformation = new
         {
             AccountId = new JwtSecurityToken(accessToken).Claims.First(a => a.Type == JwtRegisteredClaimNames.Sub).Value,

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
-using Modules.Account.Core.Models.Responses;
 using Shared.Test.Extensions;
 using Shared.Test.Fixtures;
 using Xunit;
@@ -56,23 +55,6 @@ public class AccountApiTest : IDisposable
     public void Dispose()
     {
         _webApplicationFactory.Dispose();
-    }
-
-
-    private async Task<string> LoginAsync(HttpClient httpClient, Credential credential)
-    {
-        var loginRequest = new LoginCommand
-        {
-            AuthenticationProvider = credential.AuthenticationProvider,
-            Email = credential.ProviderId,
-            AuthCode = credential.Key!
-        };
-        var response = await httpClient.PostAsJsonAsync("/api/account/login", loginRequest);
-
-        // Check
-        var accessTokenResponse = await response.Content.ReadFromJsonAsync<AccessTokenResponse>();
-
-        return accessTokenResponse!.AccessToken;
     }
 
     [Fact(DisplayName = "POST /api/account/join: Join should return 204 NoContent")]
@@ -183,16 +165,8 @@ public class AccountApiTest : IDisposable
     {
         // Let
         var httpClient = _webApplicationFactory.CreateClient();
-        var registerRequest = _registerAccountCommand;
-        await httpClient.CreateAccountAsync(_registerAccountCommand);
-        var loginCommand = new LoginCommand
-        {
-            AuthCode = registerRequest.AuthCode,
-            AuthenticationProvider = AuthenticationProvider.Self,
-            Email = registerRequest.Email
-        };
-        var loginResponse = await httpClient.LoginToAccountAsync(loginCommand);
-        var accessToken = (await loginResponse.Content.ReadFromJsonAsync<AccessTokenResponse>())!.AccessToken;
+        var testUser = await httpClient.CreateTestUser();
+        var accessToken = testUser.AccessToken.AccessToken;
 
         // Do
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
