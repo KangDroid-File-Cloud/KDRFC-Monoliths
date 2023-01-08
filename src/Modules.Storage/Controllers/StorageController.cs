@@ -67,4 +67,27 @@ public class StorageController : ControllerBase
             FolderName = request.FolderName
         }));
     }
+
+    /// <summary>
+    ///     Get Blob Projection(Detail) information.
+    /// </summary>
+    /// <param name="blobId">Target blob ID to get information.</param>
+    /// <response code="200">When successfully got blob information.</response>
+    /// <response code="401">When user's credential information is not correct.</response>
+    /// <response code="403">When target blob is not user's one.</response>
+    /// <response code="404">When parent folder is NOT Found.</response>
+    [HttpGet("{blobId}")]
+    [KDRFCAuthorization]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BlobProjection))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+    public async Task<IActionResult> GetBlobDetailsAsync(string blobId)
+    {
+        var userId = HttpContext.GetUserId()!;
+
+        return Ok(await _mediator.Send(new GetBlobDetailCommand
+        {
+            AccountId = userId,
+            BlobId = blobId
+        }));
+    }
 }

@@ -135,4 +135,57 @@ public class StorageControllerTest : IDisposable
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+    [Fact(DisplayName =
+        "GET /api/storage/blobId: GetBlobDetailsAsync should return 403 Forbidden when blob is not user's one.")]
+    public async Task Is_GetBlobDetailsAsync_Returns_403_Forbidden_When_Blob_Is_Not_User_One()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstUser = await httpClient.CreateTestUser();
+        var secondUser = await httpClient.CreateTestUser();
+        var targetAccessToken = firstUser.AccessToken.AccessToken;
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", targetAccessToken);
+        var response = await httpClient.GetAsync($"/api/storage/{secondUser.AccessTokenInformation.RootId}");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact(DisplayName = "GET /api/storage/blobId: GetBlobDetailsAsync should return 404 NotFound when blob is not found.")]
+    public async Task Is_GetBlobDetailsAsync_Returns_404_NotFound_When_Blob_Is_Not_Found()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstUser = await httpClient.CreateTestUser();
+        var targetAccessToken = firstUser.AccessToken.AccessToken;
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", targetAccessToken);
+        var response = await httpClient.GetAsync($"/api/storage/{ObjectId.Empty.ToString()}");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact(DisplayName = "GET /api/storage/blobId: GetBlobDetailsAsync should return 200 OK when all requests are valid.")]
+    public async Task Is_GetBlobDetailsAsync_Returns_200_Ok_When_All_Request_Are_Valid()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstUser = await httpClient.CreateTestUser();
+        var targetAccessToken = firstUser.AccessToken.AccessToken;
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", targetAccessToken);
+        var response = await httpClient.GetAsync($"/api/storage/{firstUser.AccessTokenInformation.RootId}");
+
+        // Check
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 }
