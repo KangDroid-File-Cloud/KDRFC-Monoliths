@@ -67,6 +67,30 @@ public class StorageControllerTest : IDisposable
     }
 
     [Fact(DisplayName =
+        "POST /api/storage/folders: CreateFolderAsync should return 403 Forbidden when parent folder is not user's one.")]
+    public async Task Is_CreateFolderAsync_Returns_Forbidden_When_Parent_Folder_Not_Users()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstTestUser = await httpClient.CreateTestUser();
+        var secondTestUser = await httpClient.CreateTestUser();
+        var request = new CreateBlobFolderRequest
+        {
+            ParentFolderId = secondTestUser.AccessTokenInformation.RootId,
+            FolderName = "KangDroidTest"
+        };
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", firstTestUser.AccessToken.AccessToken);
+        var response = await httpClient.PostAsJsonAsync("/api/storage/folders", request);
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact(DisplayName =
         "POST /api/storage/folders: CreateFolderAsync should return 404 Not Found when parent folder is not found.")]
     public async Task Is_CreateFolderAsync_Returns_NotFound_When_ParentFolder_Not_Found()
     {

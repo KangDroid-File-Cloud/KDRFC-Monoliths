@@ -81,6 +81,46 @@ public class CreateBlobFolderCommandHandlerTest
     }
 
     [Fact(DisplayName =
+        "Handle: Handle should throw an ApiException with Forbidden when request's parent folder id is not user's one.")]
+    public async Task Is_Handle_Throw_ApiException_With_Forbidden_When_ParentFolder_Not_User_One()
+    {
+        // Let
+        var parentFolderId = new ObjectId().ToString();
+        var request = new CreateBlobFolderCommand
+        {
+            AccountId = Ulid.NewUlid().ToString(),
+            FolderName = "KangDroidFolder",
+            ParentFolderId = parentFolderId
+        };
+        var parentFolder = new
+        {
+            _id = new ObjectId(parentFolderId),
+            length = 100,
+            uploadDate = DateTime.UtcNow,
+            metadata = new BlobFile
+            {
+                BlobFileType = BlobFileType.Folder,
+                OwnerId = Ulid.NewUlid().ToString(),
+                ParentFolderId = request.ParentFolderId
+            }.ToBsonDocument()
+        };
+        _mockGridFsRepository.Setup(a => a.ListFileMetadataAsync(It.IsAny<FilterDefinition<GridFSFileInfo>>()))
+                             .ReturnsAsync(new List<GridFSFileInfo>
+                             {
+                                 new(parentFolder.ToBsonDocument())
+                             });
+
+        // Do
+        var exception = await Assert.ThrowsAnyAsync<ApiException>(() => _handler.Handle(request, default));
+
+        // Verify
+        _mockGridFsRepository.VerifyAll();
+
+        // Check
+        Assert.Equal(StatusCodes.Status403Forbidden, exception.StatusCode);
+    }
+
+    [Fact(DisplayName =
         "Handle: Handle should throw an ApiException with Internal Server Error when file uploaded but cannot find uploaded file.")]
     public async Task Is_Handle_Throw_ApiException_With_InternalServerError_When_Cannot_Find_Uploaded_Files()
     {

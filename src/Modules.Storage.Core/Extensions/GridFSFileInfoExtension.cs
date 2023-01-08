@@ -20,4 +20,9 @@ public static class GridFSFileInfoExtension
             ParentFolderId = blobMetadata.ParentFolderId
         };
     }
+
+    public static BlobFile ToBlobFile(this GridFSFileInfo fileInfo)
+    {
+        return BsonSerializer.Deserialize<BlobFile>(fileInfo.Metadata);
+    }
 }

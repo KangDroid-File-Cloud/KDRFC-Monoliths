@@ -32,6 +32,13 @@ public class CreateBlobFolderCommandHandler : IRequestHandler<CreateBlobFolderCo
                              ?? throw new ApiException(HttpStatusCode.NotFound,
                                  $"Cannot find folder with id: {request.ParentFolderId}");
 
+        // Make sure parent file information is user's one.
+        if (parentFileInfo.ToBlobFile().OwnerId != request.AccountId)
+        {
+            throw new ApiException(HttpStatusCode.Forbidden,
+                $"Parent file ID {parentFileInfo.Id.ToString()} is not user's one!");
+        }
+
         // Prepare Metadata
         var metadata = new BlobFile
         {
