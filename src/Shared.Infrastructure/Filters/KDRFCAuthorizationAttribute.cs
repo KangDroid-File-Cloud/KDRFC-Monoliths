@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Core.Services;
 using Shared.Infrastructure.Extensions;
+using Shared.Models;
 using Shared.Models.Responses;
 
 namespace Shared.Infrastructure.Filters;
@@ -40,8 +41,17 @@ public class KDRFCAuthorizationAttribute : Attribute, IAsyncActionFilter
         }
 
         // Case 3. Access Token exists, validate succeed.
-        var userId = jwt.Claims.First(a => a.Type == JwtRegisteredClaimNames.Sub).Value;
-        context.HttpContext.SetUserId(userId);
+        var contextUser = new ContextAccount
+        {
+            AccountId = jwt.Claims.First(a => a.Type == JwtRegisteredClaimNames.Sub).Value,
+            RootId = jwt.Claims.First(a => a.Type == KDRFCCommonClaimName.RootId).Value,
+            Email = jwt.Claims.First(a => a.Type == KDRFCCommonClaimName.Email).Value,
+            NickName = jwt.Claims.First(a => a.Type == KDRFCCommonClaimName.Nickname).Value,
+            AuthenticationProvider = jwt.Claims
+                                        .First(a => a.Type == KDRFCCommonClaimName.AuthenticationProviderId)
+                                        .Value
+        };
+        context.HttpContext.SetContextAccount(contextUser);
 
         await next();
     }

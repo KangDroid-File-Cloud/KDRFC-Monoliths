@@ -1,19 +1,22 @@
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using Shared.Infrastructure.Filters;
+using Shared.Models;
 
 namespace Shared.Infrastructure.Extensions;
 
 public static class HttpContextExtension
 {
-    private const string UserId = "userId";
+    private const string ContextUser = "contextUser";
 
     /// <summary>
     ///     Set UserId to HttpContext's Item Dictionary.(Key is 'userId')
     /// </summary>
     /// <param name="context">HttpContext(Extensions)</param>
     /// <param name="userId">UserId to set.</param>
-    public static void SetUserId(this HttpContext context, string userId)
+    public static void SetContextAccount(this HttpContext context, ContextAccount contextUser)
     {
-        context.Items[UserId] = userId;
+        context.Items[ContextUser] = JsonConvert.SerializeObject(contextUser);
     }
 
     /// <summary>
@@ -21,8 +24,8 @@ public static class HttpContextExtension
     /// </summary>
     /// <param name="context">HttpContext(Extensions)</param>
     /// <returns>Nullable UserId from HttpContext's Item Dictionary.</returns>
-    public static string? GetUserId(this HttpContext context)
+    public static ContextAccount? GetContextAccount(this HttpContext context)
     {
-        return context.Items[UserId] as string;
+        return JsonConvert.DeserializeObject<ContextAccount>(context.Items[ContextUser] as string ?? "");
     }
 }

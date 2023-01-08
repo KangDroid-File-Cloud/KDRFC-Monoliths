@@ -61,12 +61,12 @@ public class AccountController : ControllerBase
     [KDRFCAuthorization]
     public async Task<IActionResult> DropoutAccount()
     {
-        var userId = HttpContext.GetUserId()!;
+        var contextAccount = HttpContext.GetContextAccount()!;
 
         // Send to Mediator
         await _mediator.Send(new DropoutUserByIdCommand
         {
-            UserId = userId
+            UserId = contextAccount.AccountId
         });
         return NoContent();
     }

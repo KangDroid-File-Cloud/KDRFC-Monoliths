@@ -35,11 +35,11 @@ public class StorageController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
     public async Task<IActionResult> ListFolderAsync(string folderId)
     {
-        var userId = HttpContext.GetUserId()!;
+        var contextAccount = HttpContext.GetContextAccount()!;
 
         return Ok(await _mediator.Send(new ListStorageByFolderIdCommand
         {
-            AccountId = userId,
+            AccountId = contextAccount.AccountId,
             FolderId = folderId
         }));
     }
@@ -60,11 +60,11 @@ public class StorageController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
     public async Task<IActionResult> CreateFolderAsync(CreateBlobFolderRequest request)
     {
-        var userId = HttpContext.GetUserId()!;
+        var contextAccount = HttpContext.GetContextAccount()!;
 
         return Ok(await _mediator.Send(new CreateBlobFolderCommand
         {
-            AccountId = userId,
+            AccountId = contextAccount.AccountId,
             ParentFolderId = request.ParentFolderId,
             FolderName = request.FolderName
         }));
@@ -84,11 +84,11 @@ public class StorageController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
     public async Task<IActionResult> GetBlobDetailsAsync(string blobId)
     {
-        var userId = HttpContext.GetUserId()!;
+        var contextAccount = HttpContext.GetContextAccount()!;
 
         return Ok(await _mediator.Send(new GetBlobDetailCommand
         {
-            AccountId = userId,
+            AccountId = contextAccount.AccountId,
             BlobId = blobId
         }));
     }
@@ -112,11 +112,11 @@ public class StorageController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
     public async Task<IActionResult> UploadBlobFileAsync([FromForm] CreateBlobFileRequest blobFileRequest)
     {
-        var userId = HttpContext.GetUserId()!;
+        var contextAccount = HttpContext.GetContextAccount()!;
 
         return Ok(await _mediator.Send(new CreateBlobFileCommand
         {
-            AccountId = userId,
+            AccountId = contextAccount.AccountId,
             ParentFolderId = blobFileRequest.ParentFolderId,
             FileMimeType = blobFileRequest.FileContents.ContentType,
             FileContent = blobFileRequest.FileContents.OpenReadStream(),
