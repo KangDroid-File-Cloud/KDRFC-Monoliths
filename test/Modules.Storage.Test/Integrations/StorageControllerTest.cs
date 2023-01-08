@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -7,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Modules.Storage.Core.Models.Requests;
 using MongoDB.Bson;
-using Shared.Core.Services;
 using Shared.Test.Extensions;
 using Shared.Test.Fixtures;
 using Xunit;
@@ -59,15 +57,9 @@ public class StorageControllerTest : IDisposable
         var testUser = await httpClient.CreateTestUser();
         var accessToken = testUser.AccessToken.AccessToken;
 
-        var userInformation = new
-        {
-            AccountId = new JwtSecurityToken(accessToken).Claims.First(a => a.Type == JwtRegisteredClaimNames.Sub).Value,
-            RootId = new JwtSecurityToken(accessToken).Claims.First(a => a.Type == KDRFCCommonClaimName.RootId).Value
-        };
-
         // Do
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        var response = await httpClient.GetAsync($"/api/storage/list?folderId={userInformation.RootId}");
+        var response = await httpClient.GetAsync($"/api/storage/list?folderId={testUser.AccessTokenInformation.RootId}");
 
         // Check
         Assert.True(response.IsSuccessStatusCode);
@@ -105,15 +97,9 @@ public class StorageControllerTest : IDisposable
         var httpClient = _webApplicationFactory.CreateClient();
         var testUser = await httpClient.CreateTestUser();
         var accessToken = testUser.AccessToken.AccessToken;
-
-        var userInformation = new
-        {
-            AccountId = new JwtSecurityToken(accessToken).Claims.First(a => a.Type == JwtRegisteredClaimNames.Sub).Value,
-            RootId = new JwtSecurityToken(accessToken).Claims.First(a => a.Type == KDRFCCommonClaimName.RootId).Value
-        };
         var request = new CreateBlobFolderRequest
         {
-            ParentFolderId = userInformation.RootId,
+            ParentFolderId = testUser.AccessTokenInformation.RootId,
             FolderName = "KangDroidTest"
         };
 

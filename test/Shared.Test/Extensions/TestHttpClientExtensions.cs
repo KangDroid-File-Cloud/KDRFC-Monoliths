@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
 using Modules.Account.Core.Commands;
-using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Models.Responses;
 using Shared.Test.Helpers;
 
@@ -29,16 +28,7 @@ public static class TestHttpClientExtensions
 
     public async static Task<TestUserInfo> CreateTestUser(this HttpClient httpClient)
     {
-        var testUserInfo = new TestUserInfo
-        {
-            RegisterAccountCommand = new RegisterAccountCommand
-            {
-                Email = $"{Ulid.NewUlid().ToString()}@test.com",
-                Nickname = "TestNickName",
-                AuthenticationProvider = AuthenticationProvider.Self,
-                AuthCode = "testPassword@"
-            }
-        };
+        var testUserInfo = new TestUserInfo();
 
         // 1. Create Account
         await httpClient.CreateAccountAsync(testUserInfo.RegisterAccountCommand);
