@@ -188,4 +188,77 @@ public class StorageControllerTest : IDisposable
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+    // [Fact(DisplayName =
+    //     "POST /api/storage/upload: UploadBlobFileAsync should return 400 BadRequest when parentFolderId is not actual folder ID.")]
+    // public async Task Is_UploadBlobFileAsync_Returns_400_BadRequest_When_ParentFolderId_Not_Folder()
+    // {
+    //     
+    // }
+
+    [Fact(DisplayName =
+        "POST /api/storage/upload: UploadBlobFileAsync should return 403 Forbidden when parent folder is not user's one.")]
+    public async Task Is_UploadBlobFileAsync_Returns_403_Forbidden_When_ParentFolder_Not_Users()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstUser = await httpClient.CreateTestUser();
+        var secondUser = await httpClient.CreateTestUser();
+        var targetAccessToken = firstUser.AccessToken.AccessToken;
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", targetAccessToken);
+        await using var stream = "test".CreateStream();
+        var formContent = new MultipartFormDataContent();
+        formContent.Add(new StringContent(secondUser.AccessTokenInformation.RootId), "parentFolderId");
+        formContent.Add(new StreamContent(stream), "fileContents", "test.txt");
+        var response = await httpClient.PostAsync("/api/storage/upload", formContent);
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact(DisplayName =
+        "POST /api/storage/upload: UploadBlobFileAsync should return 404 Not Found when parent folder is not found.")]
+    public async Task Is_UploadBlobFileAsync_Returns_404_NotFound_When_ParentFolder_Not_Found()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstUser = await httpClient.CreateTestUser();
+        var targetAccessToken = firstUser.AccessToken.AccessToken;
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", targetAccessToken);
+        await using var stream = "test".CreateStream();
+        var formContent = new MultipartFormDataContent();
+        formContent.Add(new StringContent(ObjectId.Empty.ToString()), "parentFolderId");
+        formContent.Add(new StreamContent(stream), "fileContents", "test.txt");
+        var response = await httpClient.PostAsync("/api/storage/upload", formContent);
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact(DisplayName = "POST /api/storage/upload: UploadBlobFileAsync should return 200 OK when all requests are valid.")]
+    public async Task Is_UploadBlobFileAsync_Return_200_When_All_Request_Valid()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstUser = await httpClient.CreateTestUser();
+        var targetAccessToken = firstUser.AccessToken.AccessToken;
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", targetAccessToken);
+        await using var stream = "test".CreateStream();
+        var formContent = new MultipartFormDataContent();
+        formContent.Add(new StringContent(firstUser.AccessTokenInformation.RootId), "parentFolderId");
+        formContent.Add(new StreamContent(stream), "fileContents", "test.txt");
+        var response = await httpClient.PostAsync("/api/storage/upload", formContent);
+
+        // Check
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 }

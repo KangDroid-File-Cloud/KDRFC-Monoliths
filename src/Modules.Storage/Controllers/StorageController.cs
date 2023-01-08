@@ -92,4 +92,35 @@ public class StorageController : ControllerBase
             BlobId = blobId
         }));
     }
+
+    /// <summary>
+    ///     Upload blob file to storage.
+    /// </summary>
+    /// <param name="blobFileRequest">A Form, Blob File Request</param>
+    /// <returns></returns>
+    /// <response code="200">When successfully uploaded blob information.</response>
+    /// <response code="400">When parentFolder is not actually folder.</response>
+    /// <response code="401">When user's credential information is not correct.</response>
+    /// <response code="403">When target blob is not user's one.</response>
+    /// <response code="404">When parent folder is NOT Found.</response>
+    [HttpPost("upload")]
+    [KDRFCAuthorization]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BlobProjection))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+    public async Task<IActionResult> UploadBlobFileAsync([FromForm] CreateBlobFileRequest blobFileRequest)
+    {
+        var userId = HttpContext.GetUserId()!;
+
+        return Ok(await _mediator.Send(new CreateBlobFileCommand
+        {
+            AccountId = userId,
+            ParentFolderId = blobFileRequest.ParentFolderId,
+            FileMimeType = blobFileRequest.FileContents.ContentType,
+            FileContent = blobFileRequest.FileContents.OpenReadStream(),
+            FileName = blobFileRequest.FileContents.FileName
+        }));
+    }
 }
