@@ -1,5 +1,6 @@
 using MediatR;
 using Modules.Account.Core.Commands;
+using Modules.Account.Core.Commands.Handlers;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Services;
 using Moq;

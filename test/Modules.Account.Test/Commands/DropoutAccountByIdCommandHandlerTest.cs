@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Modules.Account.Core.Abstractions;
 using Modules.Account.Core.Commands;
+using Modules.Account.Core.Commands.Handlers;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Infrastructure.Persistence;
 using Shared.Core.Exceptions;
