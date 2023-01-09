@@ -1,9 +1,11 @@
+using System.Net;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Storage.Core.Commands;
 using Modules.Storage.Core.Models.Requests;
 using Modules.Storage.Core.Models.Responses;
+using Shared.Core.Exceptions;
 using Shared.Infrastructure.Extensions;
 using Shared.Infrastructure.Filters;
 using Shared.Models.Responses;
@@ -122,5 +124,40 @@ public class StorageController : ControllerBase
             FileContent = blobFileRequest.FileContents.OpenReadStream(),
             FileName = blobFileRequest.FileContents.FileName
         }));
+    }
+
+    /// <summary>
+    ///     Remove Blob(and it's subfolder if file type is folder.)
+    /// </summary>
+    /// <param name="blobId">Target blob ID to remove.</param>
+    /// <remarks>
+    ///     This API does return 202 in case of long-processing recursive deletion.
+    /// </remarks>
+    /// <response code="202">Request has been accepted, processing for file deletion.</response>
+    /// <response code="400">When target blob id is ROOT Id.</response>
+    /// <response code="401">When user's credential information is not correct.</response>
+    /// <response code="403">When target blob is not user's one.</response>
+    /// <response code="404">When parent folder is NOT Found.</response>
+    [HttpDelete("{blobId}")]
+    [KDRFCAuthorization]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+    public async Task<IActionResult> DeleteBlobAsync(string blobId)
+    {
+        var contextAccount = HttpContext.GetContextAccount()!;
+
+        // Make sure we do not support deleting root blob via this api.
+        if (contextAccount.RootId == blobId) throw new ApiException(HttpStatusCode.BadRequest, "Cannot delete root blob!");
+
+        // Pre Validate & Execute
+        await _mediator.Send(new DeleteBlobByIdCommand
+        {
+            AccountId = contextAccount.AccountId,
+            TargetBlobId = blobId
+        });
+
+        return Accepted();
     }
 }

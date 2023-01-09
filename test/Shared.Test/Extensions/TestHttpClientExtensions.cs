@@ -1,6 +1,9 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Responses;
+using Modules.Storage.Core.Models.Requests;
+using Modules.Storage.Core.Models.Responses;
 using Shared.Test.Helpers;
 
 namespace Shared.Test.Extensions;
@@ -38,5 +41,15 @@ public static class TestHttpClientExtensions
                                           .Content.ReadFromJsonAsync<AccessTokenResponse>())!;
 
         return testUserInfo;
+    }
+
+    public async static Task<BlobProjection> CreateVirtualFolders(this HttpClient httpClient, string accessToken,
+                                                                  CreateBlobFolderRequest blobFolderRequest)
+    {
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var httpResponse = await httpClient.PostAsJsonAsync("/api/storage/folders", blobFolderRequest);
+
+        httpResponse.EnsureSuccessStatusCode();
+        return await httpResponse.Content.ReadFromJsonAsync<BlobProjection>();
     }
 }

@@ -261,4 +261,98 @@ public class StorageControllerTest : IDisposable
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+    [Fact(DisplayName = "DELETE /api/storage/blobId: DeleteBlobAsync should return 400 BadRequest when blobId is rootId")]
+    public async Task Is_DeleteBlobAsync_Returns_BadRequest_When_BlobId_RootId()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var user = await httpClient.CreateTestUser();
+        var targetAccessToken = user.AccessToken.AccessToken;
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", targetAccessToken);
+        var response = await httpClient.DeleteAsync($"/api/storage/{user.AccessTokenInformation.RootId}");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact(DisplayName =
+        "DELETE /api/storage/blobId: DeleteBlobAsync should return 403 Forbidden when target blob is not user's one.")]
+    public async Task Is_DeleteBlobAsync_Returns_Forbidden_When_Target_Blob_Not_Users_One()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstUser = await httpClient.CreateTestUser();
+        var secondUser = await httpClient.CreateTestUser();
+        var targetAccessToken = firstUser.AccessToken.AccessToken;
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", targetAccessToken);
+        var response = await httpClient.DeleteAsync($"/api/storage/{secondUser.AccessTokenInformation.RootId}");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact(DisplayName =
+        "DELETE /api/storage/blobId: DeleteBlobAsync should return 404 NotFound when target blob is not found.")]
+    public async Task Is_DeleteBlobAsync_Returns_404_Not_Found_When_Blob_Does_Not_Exists()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstUser = await httpClient.CreateTestUser();
+        var targetAccessToken = firstUser.AccessToken.AccessToken;
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", targetAccessToken);
+        var response = await httpClient.DeleteAsync($"/api/storage/{ObjectId.GenerateNewId().ToString()}");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact(DisplayName =
+        "DELETE /api/storage/blobId: DeleteBlobAsync should return 202 Accepted when successfully deleted files.")]
+    public async Task Is_DeleteBlobAsync_Returns_Ok_When_Successfully_Deleted_Files()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstUser = await httpClient.CreateTestUser();
+
+        // Create First Folder(/test)
+        var testFolder = await httpClient.CreateVirtualFolders(firstUser.AccessToken.AccessToken, new CreateBlobFolderRequest
+        {
+            FolderName = "test",
+            ParentFolderId = firstUser.AccessTokenInformation.RootId
+        });
+
+        // Create Second Folder(/test/two)
+        var testTwoFolder = await httpClient.CreateVirtualFolders(firstUser.AccessToken.AccessToken,
+            new CreateBlobFolderRequest
+            {
+                FolderName = "two",
+                ParentFolderId = testFolder.Id
+            });
+
+        // Create Third Folder(/test/two/three)
+        var testThreeFolder = await httpClient.CreateVirtualFolders(firstUser.AccessToken.AccessToken,
+            new CreateBlobFolderRequest
+            {
+                FolderName = "three",
+                ParentFolderId = testTwoFolder.Id
+            });
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", firstUser.AccessToken.AccessToken);
+        var response = await httpClient.DeleteAsync($"/api/storage/{testFolder.Id}");
+
+        // Check
+        Assert.True(response.IsSuccessStatusCode);
+    }
 }
