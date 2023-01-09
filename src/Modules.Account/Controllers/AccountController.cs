@@ -66,7 +66,8 @@ public class AccountController : ControllerBase
         // Send to Mediator
         await _mediator.Send(new DropoutUserByIdCommand
         {
-            UserId = contextAccount.AccountId
+            UserId = contextAccount.AccountId,
+            RootId = contextAccount.RootId
         });
         return NoContent();
     }

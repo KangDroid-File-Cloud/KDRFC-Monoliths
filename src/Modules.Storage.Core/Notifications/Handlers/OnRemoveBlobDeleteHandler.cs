@@ -6,6 +6,7 @@ using Modules.Storage.Core.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
+using Shared.Core.Notifications;
 
 namespace Modules.Storage.Core.Notifications.Handlers;
 

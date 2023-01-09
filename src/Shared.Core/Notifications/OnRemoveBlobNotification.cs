@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Modules.Storage.Core.Notifications;
+namespace Shared.Core.Notifications;
 
 public class OnRemoveBlobNotification : INotification
 {

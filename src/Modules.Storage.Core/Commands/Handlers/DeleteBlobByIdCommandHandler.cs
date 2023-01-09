@@ -3,8 +3,8 @@ using MediatR;
 using Modules.Storage.Core.Abstractions;
 using Modules.Storage.Core.Extensions;
 using Modules.Storage.Core.Models;
-using Modules.Storage.Core.Notifications;
 using Shared.Core.Exceptions;
+using Shared.Core.Notifications;
 
 namespace Modules.Storage.Core.Commands.Handlers;
 

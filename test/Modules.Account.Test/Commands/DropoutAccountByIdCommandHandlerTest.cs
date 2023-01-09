@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Modules.Account.Core.Abstractions;
@@ -5,7 +6,10 @@ using Modules.Account.Core.Commands;
 using Modules.Account.Core.Commands.Handlers;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Infrastructure.Persistence;
+using MongoDB.Bson;
+using Moq;
 using Shared.Core.Exceptions;
+using Shared.Core.Notifications;
 using Xunit;
 
 namespace Modules.Account.Test.Commands;
@@ -14,6 +18,7 @@ public class DropoutAccountByIdCommandHandlerTest
 {
     private readonly IAccountDbContext _accountDbContext;
     private readonly DropoutAccountByIdCommandHandler _commandHandler;
+    private readonly Mock<IMediator> _mockMediator;
 
     public DropoutAccountByIdCommandHandlerTest()
     {
@@ -21,7 +26,8 @@ public class DropoutAccountByIdCommandHandlerTest
                      .UseInMemoryDatabase(Ulid.NewUlid().ToString())
                      .Options;
         _accountDbContext = new AccountDbContext(option);
-        _commandHandler = new DropoutAccountByIdCommandHandler(_accountDbContext);
+        _mockMediator = new Mock<IMediator>();
+        _commandHandler = new DropoutAccountByIdCommandHandler(_accountDbContext, _mockMediator.Object);
     }
 
     private async Task<Core.Models.Data.Account> CreateAccountAsync()
@@ -75,11 +81,21 @@ public class DropoutAccountByIdCommandHandlerTest
         var account = await CreateAccountAsync();
         var request = new DropoutUserByIdCommand
         {
-            UserId = account.Id
+            UserId = account.Id,
+            RootId = ObjectId.GenerateNewId().ToString()
         };
+        _mockMediator.Setup(a => a.Publish(It.IsAny<OnRemoveBlobNotification>(), It.IsAny<CancellationToken>()))
+                     .Callback((OnRemoveBlobNotification blobNotification, CancellationToken token) =>
+                     {
+                         Assert.Equal(request.UserId, blobNotification.AccountId);
+                         Assert.Equal(request.RootId, blobNotification.TargetBlobId);
+                     });
 
         // Do
         await _commandHandler.Handle(request, default);
+
+        // Verify
+        _mockMediator.VerifyAll();
 
         // Check Account is still in DB
         var dataList = await _accountDbContext.Accounts
