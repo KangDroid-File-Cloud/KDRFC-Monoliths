@@ -1,6 +1,5 @@
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
-using Modules.Account.Core.Models.Responses;
 
 namespace Modules.Account.Core.Services;
 
@@ -29,5 +28,5 @@ public interface IAuthenticationService
     /// </summary>
     /// <param name="loginCommand">Login Request</param>
     /// <returns>Access Token Response containing AccessToken, RefreshToken.</returns>
-    public Task<AccessTokenResponse> LoginAsync(LoginCommand loginCommand);
+    public Task<Credential> AuthenticateAsync(LoginCommand loginCommand);
 }

@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Modules.Account.Core.Abstractions;
@@ -7,10 +5,7 @@ using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Services.Authentication;
 using Modules.Account.Infrastructure.Persistence;
-using Moq;
-using Shared.Core.Abstractions;
 using Shared.Core.Exceptions;
-using Shared.Core.Services;
 using Xunit;
 
 namespace Modules.Account.Test.Services.Authentication;
@@ -18,10 +13,6 @@ namespace Modules.Account.Test.Services.Authentication;
 public class SelfAuthenticationServiceTest
 {
     private readonly IAccountDbContext _accountDbContext;
-    private readonly Mock<ICacheService> _mockCacheService;
-
-    private readonly Mock<IJwtService> _mockJwtService;
-    private readonly Mock<IMediator> _mockMediator;
     private readonly SelfAuthenticationService _selfAuthenticationService;
 
     public SelfAuthenticationServiceTest()
@@ -29,12 +20,8 @@ public class SelfAuthenticationServiceTest
         _accountDbContext = new AccountDbContext(new DbContextOptionsBuilder<AccountDbContext>()
                                                  .UseInMemoryDatabase(Ulid.NewUlid().ToString())
                                                  .Options);
-        _mockJwtService = new Mock<IJwtService>();
-        _mockCacheService = new Mock<ICacheService>();
-        _mockMediator = new Mock<IMediator>();
         _selfAuthenticationService =
-            new SelfAuthenticationService(_accountDbContext, _mockJwtService.Object, _mockCacheService.Object,
-                _mockMediator.Object);
+            new SelfAuthenticationService(_accountDbContext);
     }
 
     [Fact(DisplayName = "CreateAccountAsync: CreateAccountAsync should register user to database when request is valid.")]
@@ -124,7 +111,8 @@ public class SelfAuthenticationServiceTest
         };
 
         // Do
-        var exception = await Assert.ThrowsAnyAsync<ApiException>(() => _selfAuthenticationService.LoginAsync(loginCommand));
+        var exception =
+            await Assert.ThrowsAnyAsync<ApiException>(() => _selfAuthenticationService.AuthenticateAsync(loginCommand));
 
         // Check
         Assert.Equal(StatusCodes.Status401Unauthorized, exception.StatusCode);
@@ -162,7 +150,8 @@ public class SelfAuthenticationServiceTest
         };
 
         // Do
-        var exception = await Assert.ThrowsAnyAsync<ApiException>(() => _selfAuthenticationService.LoginAsync(loginCommand));
+        var exception =
+            await Assert.ThrowsAnyAsync<ApiException>(() => _selfAuthenticationService.AuthenticateAsync(loginCommand));
 
         // Check
         Assert.Equal(StatusCodes.Status401Unauthorized, exception.StatusCode);
@@ -197,25 +186,15 @@ public class SelfAuthenticationServiceTest
             AuthCode = "testPassword@",
             Email = "kangdroid@test.com"
         };
-        _mockJwtService.Setup(a => a.GenerateJwt(It.IsAny<List<Claim>>(), null))
-                       .Returns("testJwt");
-        _mockJwtService.Setup(a => a.GenerateJwt(null, It.IsAny<DateTime>()))
-                       .Returns("RefreshTokenTest");
-        _mockMediator.Setup(a => a.Send(It.IsAny<IRequest<string>>(), It.IsAny<CancellationToken>()))
-                     .ReturnsAsync("rootId");
-        _mockCacheService.Setup(a =>
-            a.SetItemAsync(AccountCacheKeys.RefreshTokenKey("RefreshTokenTest"), It.IsAny<object>(), It.IsAny<TimeSpan>()));
 
         // Do
-        var response = await _selfAuthenticationService.LoginAsync(loginCommand);
-
-        // Verify
-        _mockJwtService.VerifyAll();
-        _mockCacheService.VerifyAll();
-        _mockMediator.VerifyAll();
+        var response = await _selfAuthenticationService.AuthenticateAsync(loginCommand);
 
         // Check
-        Assert.Equal("testJwt", response.AccessToken);
-        Assert.Equal("RefreshTokenTest", response.RefreshToken);
+        var targetCredential = account.Credentials.First();
+        Assert.Equal(targetCredential.UserId, response.UserId);
+        Assert.Equal(targetCredential.AuthenticationProvider, response.AuthenticationProvider);
+        Assert.Equal(targetCredential.ProviderId, response.ProviderId);
+        Assert.Equal(targetCredential.Key, response.Key);
     }
 }
