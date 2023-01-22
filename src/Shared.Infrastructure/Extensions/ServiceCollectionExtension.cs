@@ -72,6 +72,10 @@ public static class ServiceCollectionExtension
                                  builder.AddConsoleExporter();
                          })
                          .StartWithHost();
+
+        // Add IHttpClientFactory
+        serviceCollection.AddHttpClient();
+
         return serviceCollection;
     }
 }

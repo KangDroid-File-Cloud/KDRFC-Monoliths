@@ -16,11 +16,13 @@ public static class ServiceCollectionExtension
 
         // Register Authentication Provider.
         services.AddTransient<SelfAuthenticationService>();
+        services.AddTransient<GoogleAuthenticationService>();
         services.AddScoped<AuthenticationProviderFactory>(serviceProvider => provider =>
         {
             return provider switch
             {
                 AuthenticationProvider.Self => serviceProvider.GetRequiredService<SelfAuthenticationService>(),
+                AuthenticationProvider.Google => serviceProvider.GetRequiredService<GoogleAuthenticationService>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, "Unknown Provider")
             };
         });
