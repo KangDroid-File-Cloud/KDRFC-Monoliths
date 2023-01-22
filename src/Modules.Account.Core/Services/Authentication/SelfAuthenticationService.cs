@@ -3,9 +3,11 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Modules.Account.Core.Abstractions;
 using Modules.Account.Core.Commands;
+using Modules.Account.Core.Extensions;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Models.Responses;
 using Shared.Core.Abstractions;
+using Shared.Core.Commands;
 using Shared.Core.Exceptions;
 using Shared.Core.Services;
 
@@ -14,15 +16,20 @@ namespace Modules.Account.Core.Services.Authentication;
 /// <summary>
 ///     Self Authentication Service designated to support Email-Password registration/login.
 /// </summary>
-public class SelfAuthenticationService : AuthenticationServiceBase
+public class SelfAuthenticationService : IAuthenticationService
 {
     private readonly IAccountDbContext _accountDbContext;
+    private readonly ICacheService _cacheService;
+    private readonly IJwtService _jwtService;
+    private readonly IMediator _mediator;
 
-    public SelfAuthenticationService(IAccountDbContext accountDbContext,
-                                     IJwtService jwtService, ICacheService cacheService,
-                                     IMediator mediator) : base(mediator, jwtService, cacheService)
+    public SelfAuthenticationService(IAccountDbContext accountDbContext, IJwtService jwtService, ICacheService cacheService,
+                                     IMediator mediator)
     {
         _accountDbContext = accountDbContext;
+        _jwtService = jwtService;
+        _cacheService = cacheService;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -35,7 +42,7 @@ public class SelfAuthenticationService : AuthenticationServiceBase
     /// <param name="registerAccountCommand">Registration Request</param>
     /// <returns>Created Account Entity.</returns>
     /// <exception cref="ApiException">When user already registered within this service(409)</exception>
-    public async override Task<Models.Data.Account> CreateAccountAsync(RegisterAccountCommand registerAccountCommand)
+    public async Task<Models.Data.Account> CreateAccountAsync(RegisterAccountCommand registerAccountCommand)
     {
         if (await _accountDbContext.Credentials.AnyAsync(
                 a => a.AuthenticationProvider == AuthenticationProvider.Self && a.ProviderId == registerAccountCommand.Email))
@@ -67,7 +74,7 @@ public class SelfAuthenticationService : AuthenticationServiceBase
         return account;
     }
 
-    public async override Task<AccessTokenResponse> LoginAsync(LoginCommand loginCommand)
+    public async Task<AccessTokenResponse> LoginAsync(LoginCommand loginCommand)
     {
         // Find Credential
         var credential = await _accountDbContext.Credentials
@@ -82,7 +89,28 @@ public class SelfAuthenticationService : AuthenticationServiceBase
         if (credential.Key != loginCommand.AuthCode)
             throw new ApiException(HttpStatusCode.Unauthorized, "Login failed: Please check login information again.");
 
-        // Create Login Access Token
-        return await CreateLoginAccessTokenAsync(credential);
+        // Get Root
+        var rootId = await _mediator.Send(new GetRootByAccountIdCommand
+        {
+            AccountId = credential.Account.Id
+        });
+
+        // Create JWT
+        var jwt = _jwtService.GenerateAccessToken(credential.Account, credential.AuthenticationProvider, rootId);
+
+        // Create Refresh Token
+        var refreshToken = new RefreshToken
+        {
+            UserId = credential.UserId,
+            Token = _jwtService.GenerateJwt(null, DateTime.UtcNow.AddDays(14))
+        };
+        await _cacheService.SetItemAsync(AccountCacheKeys.RefreshTokenKey(refreshToken.Token), refreshToken,
+            TimeSpan.FromDays(14));
+
+        return new AccessTokenResponse
+        {
+            AccessToken = jwt,
+            RefreshToken = refreshToken.Token
+        };
     }
 }
