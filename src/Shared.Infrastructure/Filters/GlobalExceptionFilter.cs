@@ -24,17 +24,7 @@ public class GlobalExceptionFilter : ExceptionFilterAttribute
         // Log Error first.
         _logger.LogError(ToExceptionLogMessage(context.HttpContext.Request, context.Exception));
 
-        if (context.Exception is ApiException exception)
-        {
-            context.Result = new ObjectResult(new ErrorResponse
-            {
-                Message = exception.Message,
-                TraceIdentifier = context.HttpContext.TraceIdentifier
-            })
-            {
-                StatusCode = exception.StatusCode
-            };
-        }
+        if (context.Exception is ApiException exception) context.Result = HandleApiException(exception, context.HttpContext);
         else
         {
             context.Result = new ObjectResult(new ErrorResponse
@@ -46,6 +36,26 @@ public class GlobalExceptionFilter : ExceptionFilterAttribute
                 StatusCode = StatusCodes.Status500InternalServerError
             };
         }
+    }
+
+    private IActionResult HandleApiException(ApiException exception, HttpContext httpContext)
+    {
+        if (exception.CustomJsonBody != null)
+        {
+            return new ObjectResult(exception.CustomJsonBody)
+            {
+                StatusCode = exception.StatusCode
+            };
+        }
+
+        return new ObjectResult(new ErrorResponse
+        {
+            Message = exception.Message,
+            TraceIdentifier = httpContext.TraceIdentifier
+        })
+        {
+            StatusCode = exception.StatusCode
+        };
     }
 
     private string ToExceptionLogMessage(HttpRequest request, Exception exception)
