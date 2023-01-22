@@ -30,6 +30,7 @@ public class LoginAccountCommandHandler : IRequestHandler<LoginCommand, AccessTo
         var providerFactory = request.AuthenticationProvider switch
         {
             AuthenticationProvider.Self => _authenticationProviderFactory(AuthenticationProvider.Self),
+            AuthenticationProvider.Google => _authenticationProviderFactory(AuthenticationProvider.Google),
             _ => throw new ArgumentException("Unknown Value", request.AuthenticationProvider.ToString())
         };
 

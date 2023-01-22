@@ -6,7 +6,8 @@ namespace Modules.Account.Core.Models.Data;
 [JsonConverter(typeof(StringEnumConverter))]
 public enum AuthenticationProvider
 {
-    Self
+    Self,
+    Google
 }
 
 public class Credential
