@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Modules.Account.Core.Abstractions;
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
@@ -10,9 +10,8 @@ using Modules.Account.Core.Models.Internal;
 using Modules.Account.Core.Models.Responses;
 using Shared.Core.Exceptions;
 using Shared.Core.Services;
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
-namespace Modules.Account.Core.Services;
+namespace Modules.Account.Core.Services.Authentication;
 
 [ExcludeFromCodeCoverage]
 public abstract class OAuthServiceBase : IAuthenticationService
@@ -20,46 +19,10 @@ public abstract class OAuthServiceBase : IAuthenticationService
     protected readonly IAccountDbContext _accountDbContext;
     protected readonly IJwtService _jwtService;
 
-    protected OAuthServiceBase(IAccountDbContext accountDbContext,
-                               IJwtService jwtService)
+    protected OAuthServiceBase(IAccountDbContext accountDbContext, IJwtService jwtService)
     {
         _accountDbContext = accountDbContext;
         _jwtService = jwtService;
-    }
-
-    public async Task<Models.Data.Account> CreateAccountAsync(RegisterAccountCommand registerAccountCommand)
-    {
-        // In OAuth Scenarios, authCode is JoinToken.
-        var joinTokenBody = GetJoinTokenBodyFromJwt(registerAccountCommand.AuthCode);
-        if (await _accountDbContext.Credentials.AnyAsync(
-                a => a.AuthenticationProvider == registerAccountCommand.AuthenticationProvider &&
-                     a.ProviderId == joinTokenBody.Id))
-        {
-            throw new ApiException(HttpStatusCode.Conflict,
-                $"Cannot register new user: {registerAccountCommand.Email} with {registerAccountCommand.AuthenticationProvider.ToString()} already exists!");
-        }
-
-        var id = Ulid.NewUlid().ToString();
-        var account = new Models.Data.Account
-        {
-            Id = id,
-            NickName = registerAccountCommand.Nickname,
-            Email = registerAccountCommand.Email,
-            Credentials = new List<Credential>
-            {
-                new()
-                {
-                    UserId = id,
-                    AuthenticationProvider = registerAccountCommand.AuthenticationProvider,
-                    ProviderId = registerAccountCommand.Email,
-                    Key = registerAccountCommand.AuthCode
-                }
-            }
-        };
-        _accountDbContext.Accounts.Add(account);
-        await _accountDbContext.SaveChangesAsync(default);
-
-        return account;
     }
 
     public async Task<Credential> AuthenticateAsync(LoginCommand loginCommand)
@@ -97,19 +60,6 @@ public abstract class OAuthServiceBase : IAuthenticationService
         };
 
         return _jwtService.GenerateJwt(claims, DateTime.UtcNow.AddMinutes(10));
-    }
-
-    private JoinTokenBody GetJoinTokenBodyFromJwt(string jwt)
-    {
-        var securityToken = new JwtSecurityToken(jwt);
-        Enum.TryParse<AuthenticationProvider>(
-            securityToken.Claims.First(a => a.Type == KDRFCCommonClaimName.AuthenticationProviderId).Value, out var provider);
-        return new JoinTokenBody
-        {
-            Id = securityToken.Claims.First(a => a.Type == JwtRegisteredClaimNames.Sub).Value,
-            Email = securityToken.Claims.First(a => a.Type == JwtRegisteredClaimNames.Email).Value,
-            Provider = provider
-        };
     }
 
     protected abstract Task<string> GetOAuthAccessTokenAsync(string authCode);

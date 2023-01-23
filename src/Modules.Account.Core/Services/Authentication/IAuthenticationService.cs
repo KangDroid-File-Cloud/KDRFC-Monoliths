@@ -1,7 +1,7 @@
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
 
-namespace Modules.Account.Core.Services;
+namespace Modules.Account.Core.Services.Authentication;
 
 /// <summary>
 ///     Authentication Provider Factory(Registered in DI Container.)

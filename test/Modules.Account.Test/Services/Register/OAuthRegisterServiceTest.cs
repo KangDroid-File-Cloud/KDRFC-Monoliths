@@ -14,7 +14,7 @@ using Shared.Core.Exceptions;
 using Shared.Core.Services;
 using Xunit;
 
-namespace Modules.Account.Test.Services.Authentication.Register;
+namespace Modules.Account.Test.Services.Register;
 
 public class OAuthRegisterServiceTest
 {

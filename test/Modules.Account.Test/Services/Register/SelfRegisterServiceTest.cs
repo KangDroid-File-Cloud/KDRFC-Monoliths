@@ -8,7 +8,7 @@ using Modules.Account.Infrastructure.Persistence;
 using Shared.Core.Exceptions;
 using Xunit;
 
-namespace Modules.Account.Test.Services.Authentication.Register;
+namespace Modules.Account.Test.Services.Register;
 
 public class SelfRegisterServiceTest
 {
