@@ -41,7 +41,7 @@ public class GoogleAuthenticationService : OAuthServiceBase
         _googleClientSecret = configuration["OAuth:Google:ClientSecret"];
     }
 
-    public async override Task<string> GetOAuthAccessTokenAsync(string authCode)
+    protected async override Task<string> GetOAuthAccessTokenAsync(string authCode)
     {
         var httpClient = _httpClientFactory.CreateClient();
         var response = await httpClient.PostAsync("https://oauth2.googleapis.com/token", new FormUrlEncodedContent(
@@ -67,7 +67,7 @@ public class GoogleAuthenticationService : OAuthServiceBase
         return accessTokenResponse.AccessToken;
     }
 
-    public async override Task<OAuthLoginResult> GetOAuthUserInfoAsync(string accessToken)
+    protected async override Task<OAuthLoginResult> GetOAuthUserInfoAsync(string accessToken)
     {
         var httpClient = _httpClientFactory.CreateClient();
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

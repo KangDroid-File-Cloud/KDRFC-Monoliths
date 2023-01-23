@@ -2,7 +2,7 @@ using MediatR;
 using Modules.Account.Core.Extensions;
 using Modules.Account.Core.Models.Data;
 using Modules.Account.Core.Models.Responses;
-using Modules.Account.Core.Services;
+using Modules.Account.Core.Services.Authentication;
 using Shared.Core.Abstractions;
 using Shared.Core.Commands;
 using Shared.Core.Services;
@@ -27,12 +27,7 @@ public class LoginAccountCommandHandler : IRequestHandler<LoginCommand, AccessTo
 
     public async Task<AccessTokenResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var providerFactory = request.AuthenticationProvider switch
-        {
-            AuthenticationProvider.Self => _authenticationProviderFactory(AuthenticationProvider.Self),
-            AuthenticationProvider.Google => _authenticationProviderFactory(AuthenticationProvider.Google),
-            _ => throw new ArgumentException("Unknown Value", request.AuthenticationProvider.ToString())
-        };
+        var providerFactory = _authenticationProviderFactory(request.AuthenticationProvider);
 
         // Get Credential(Authenticate through providers)
         var credential = await providerFactory.AuthenticateAsync(request);

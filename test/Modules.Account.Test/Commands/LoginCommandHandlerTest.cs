@@ -3,7 +3,7 @@ using MediatR;
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Commands.Handlers;
 using Modules.Account.Core.Models.Data;
-using Modules.Account.Core.Services;
+using Modules.Account.Core.Services.Authentication;
 using Moq;
 using Shared.Core.Abstractions;
 using Shared.Core.Commands;
