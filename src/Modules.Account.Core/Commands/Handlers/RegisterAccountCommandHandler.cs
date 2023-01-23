@@ -1,29 +1,23 @@
 using MediatR;
-using Modules.Account.Core.Models.Data;
-using Modules.Account.Core.Services;
+using Modules.Account.Core.Services.Register;
 using Shared.Core.Commands;
 
 namespace Modules.Account.Core.Commands.Handlers;
 
 public class RegisterAccountCommandHandler : IRequestHandler<RegisterAccountCommand>
 {
-    private readonly AuthenticationProviderFactory _authenticationProviderFactory;
     private readonly IMediator _mediator;
+    private readonly RegisterProviderFactory _registerProviderFactory;
 
-    public RegisterAccountCommandHandler(AuthenticationProviderFactory factory, IMediator mediator)
+    public RegisterAccountCommandHandler(IMediator mediator, RegisterProviderFactory registerProviderFactory)
     {
-        _authenticationProviderFactory = factory;
         _mediator = mediator;
+        _registerProviderFactory = registerProviderFactory;
     }
 
     public async Task<Unit> Handle(RegisterAccountCommand request, CancellationToken cancellationToken)
     {
-        var providerFactory = request.AuthenticationProvider switch
-        {
-            AuthenticationProvider.Self => _authenticationProviderFactory(AuthenticationProvider.Self),
-            AuthenticationProvider.Google => _authenticationProviderFactory(AuthenticationProvider.Google),
-            _ => throw new ArgumentException("Unknown Value", request.AuthenticationProvider.ToString())
-        };
+        var providerFactory = _registerProviderFactory(request.AuthenticationProvider);
 
         // Create Account(May throw ApiException)
         var account = await providerFactory.CreateAccountAsync(request);

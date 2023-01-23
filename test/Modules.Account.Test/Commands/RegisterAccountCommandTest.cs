@@ -2,7 +2,7 @@ using MediatR;
 using Modules.Account.Core.Commands;
 using Modules.Account.Core.Commands.Handlers;
 using Modules.Account.Core.Models.Data;
-using Modules.Account.Core.Services;
+using Modules.Account.Core.Services.Register;
 using Moq;
 using Shared.Core.Commands;
 using Xunit;
@@ -11,21 +11,21 @@ namespace Modules.Account.Test.Commands;
 
 public class RegisterAccountCommandTest
 {
-    private readonly AuthenticationProviderFactory _authenticationProviderFactory;
     private readonly RegisterAccountCommandHandler _commandHandler;
-
-    // Authentication Providers
-    private readonly Mock<IAuthenticationService> _mockAuthenticationService;
 
     // IMediator
     private readonly Mock<IMediator> _mockMediator;
 
+    // Authentication Providers
+    private readonly Mock<IRegisterService> _mockRegisterService;
+    private readonly RegisterProviderFactory _registerProviderFactory;
+
     public RegisterAccountCommandTest()
     {
-        _mockAuthenticationService = new Mock<IAuthenticationService>();
-        _authenticationProviderFactory = provider => _mockAuthenticationService.Object;
+        _mockRegisterService = new Mock<IRegisterService>();
+        _registerProviderFactory = _ => _mockRegisterService.Object;
         _mockMediator = new Mock<IMediator>();
-        _commandHandler = new RegisterAccountCommandHandler(_authenticationProviderFactory, _mockMediator.Object);
+        _commandHandler = new RegisterAccountCommandHandler(_mockMediator.Object, _registerProviderFactory);
     }
 
     [Fact(DisplayName = "Handle: handle should call CreateAsync method with AuthenticationProviderFactory.")]
@@ -43,8 +43,8 @@ public class RegisterAccountCommandTest
         {
             Id = Ulid.NewUlid().ToString()
         };
-        _mockAuthenticationService.Setup(a => a.CreateAccountAsync(request))
-                                  .ReturnsAsync(mockAccount);
+        _mockRegisterService.Setup(a => a.CreateAccountAsync(request))
+                            .ReturnsAsync(mockAccount);
         _mockMediator.Setup(a => a.Send(It.IsAny<ProvisionRootByIdCommand>(), It.IsAny<CancellationToken>()))
                      .Callback((IRequest<Unit> request, CancellationToken _) =>
                      {
@@ -58,7 +58,7 @@ public class RegisterAccountCommandTest
         await _commandHandler.Handle(request, default);
 
         // Verify
-        _mockAuthenticationService.VerifyAll();
+        _mockRegisterService.VerifyAll();
         _mockMediator.VerifyAll();
     }
 }

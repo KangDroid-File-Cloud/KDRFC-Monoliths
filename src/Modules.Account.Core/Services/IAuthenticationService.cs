@@ -14,16 +14,6 @@ public delegate IAuthenticationService AuthenticationProviderFactory(Authenticat
 public interface IAuthenticationService
 {
     /// <summary>
-    ///     Create Account with given Register Account Command(Register Request)
-    /// </summary>
-    /// <remarks>
-    ///     Every provider should implement account creation method with it's OAuth2 Policy.
-    /// </remarks>
-    /// <param name="registerAccountCommand">Register Request</param>
-    /// <returns>Created Account</returns>
-    public Task<Models.Data.Account> CreateAccountAsync(RegisterAccountCommand registerAccountCommand);
-
-    /// <summary>
     ///     Login to KDRFC Server.
     /// </summary>
     /// <param name="loginCommand">Login Request</param>

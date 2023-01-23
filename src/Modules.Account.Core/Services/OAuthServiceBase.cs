@@ -14,13 +14,6 @@ using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegiste
 
 namespace Modules.Account.Core.Services;
 
-public class JoinTokenBody
-{
-    public string Id { get; set; }
-    public string Email { get; set; }
-    public AuthenticationProvider Provider { get; set; }
-}
-
 [ExcludeFromCodeCoverage]
 public abstract class OAuthServiceBase : IAuthenticationService
 {
@@ -119,6 +112,6 @@ public abstract class OAuthServiceBase : IAuthenticationService
         };
     }
 
-    public abstract Task<string> GetOAuthAccessTokenAsync(string authCode);
-    public abstract Task<OAuthLoginResult> GetOAuthUserInfoAsync(string accessToken);
+    protected abstract Task<string> GetOAuthAccessTokenAsync(string authCode);
+    protected abstract Task<OAuthLoginResult> GetOAuthUserInfoAsync(string accessToken);
 }

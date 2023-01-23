@@ -19,48 +19,6 @@ public class SelfAuthenticationService : IAuthenticationService
         _accountDbContext = accountDbContext;
     }
 
-    /// <summary>
-    ///     See <see cref="IAuthenticationService.CreateAccountAsync" /> for top-level interface.
-    /// </summary>
-    /// <remarks>
-    ///     Self Authentication Provider does set's user's password to Credential's "Key" property.
-    ///     Note "Key" property in credential is for Self Authentication Provider only.
-    /// </remarks>
-    /// <param name="registerAccountCommand">Registration Request</param>
-    /// <returns>Created Account Entity.</returns>
-    /// <exception cref="ApiException">When user already registered within this service(409)</exception>
-    public async Task<Models.Data.Account> CreateAccountAsync(RegisterAccountCommand registerAccountCommand)
-    {
-        if (await _accountDbContext.Credentials.AnyAsync(
-                a => a.AuthenticationProvider == AuthenticationProvider.Self && a.ProviderId == registerAccountCommand.Email))
-        {
-            throw new ApiException(HttpStatusCode.Conflict,
-                $"Cannot register new user: {registerAccountCommand.Email} with {registerAccountCommand.AuthenticationProvider.ToString()} already exists!");
-        }
-
-        var id = Ulid.NewUlid().ToString();
-        var account = new Models.Data.Account
-        {
-            Id = id,
-            NickName = registerAccountCommand.Nickname,
-            Email = registerAccountCommand.Email,
-            Credentials = new List<Credential>
-            {
-                new()
-                {
-                    UserId = id,
-                    AuthenticationProvider = registerAccountCommand.AuthenticationProvider,
-                    ProviderId = registerAccountCommand.Email,
-                    Key = registerAccountCommand.AuthCode
-                }
-            }
-        };
-        _accountDbContext.Accounts.Add(account);
-        await _accountDbContext.SaveChangesAsync(default);
-
-        return account;
-    }
-
     public async Task<Credential> AuthenticateAsync(LoginCommand loginCommand)
     {
         // Find Credential
