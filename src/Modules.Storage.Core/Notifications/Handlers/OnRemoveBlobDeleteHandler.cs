@@ -45,7 +45,9 @@ public class OnRemoveBlobDeleteHandler : INotificationHandler<OnRemoveBlobNotifi
         {
             // If blob type is folder, execute recursive again.
             if (eachBlobFile.BlobFileType == BlobFileType.Folder)
+            {
                 await HandleRecursive(eachBlobFile.Id, accountId);
+            }
         }
 
         var deleteFilter = Builders<GridFSFileInfo>.Filter.Or(Builders<GridFSFileInfo>.Filter.Eq(

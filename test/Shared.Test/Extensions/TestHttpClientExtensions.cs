@@ -16,7 +16,11 @@ public static class TestHttpClientExtensions
     {
         var response = await httpClient.PostAsJsonAsync("/api/account/join", requestBody);
 
-        if (validateSuccessfulResponse) response.EnsureSuccessStatusCode();
+        if (validateSuccessfulResponse)
+        {
+            response.EnsureSuccessStatusCode();
+        }
+
         return response;
     }
 
@@ -25,7 +29,11 @@ public static class TestHttpClientExtensions
     {
         var response = await httpClient.PostAsJsonAsync("/api/account/login", loginCommand);
 
-        if (validateSuccessfulResponse) response.EnsureSuccessStatusCode();
+        if (validateSuccessfulResponse)
+        {
+            response.EnsureSuccessStatusCode();
+        }
+
         return response;
     }
 

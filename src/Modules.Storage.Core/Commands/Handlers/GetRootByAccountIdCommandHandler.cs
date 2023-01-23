@@ -30,7 +30,9 @@ public class GetRootByAccountIdCommandHandler : IRequestHandler<GetRootByAccount
         var gridFsList = await _gridFsRepository.ListFileMetadataAsync(filter);
 
         if (gridFsList.Count != 1)
+        {
             throw new ApiException(HttpStatusCode.InternalServerError, "Cannot get root information for account!");
+        }
 
         return gridFsList.First().Id.ToString();
     }

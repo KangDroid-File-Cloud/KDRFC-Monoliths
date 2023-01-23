@@ -27,7 +27,9 @@ public class CreateBlobFileCommandHandler : IRequestHandler<CreateBlobFileComman
 
         // if blob file is not a folder, return 400 bad request.
         if (parentFileBlob.BlobFileType != BlobFileType.Folder)
+        {
             throw new ApiException(HttpStatusCode.BadRequest, $"Blob ID {request.ParentFolderId} is NOT a folder!");
+        }
 
         // if blob file is not owned by user, return 403 forbidden.
         if (parentFileBlob.OwnerId != request.AccountId)

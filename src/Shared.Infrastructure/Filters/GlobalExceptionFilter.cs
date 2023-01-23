@@ -24,7 +24,10 @@ public class GlobalExceptionFilter : ExceptionFilterAttribute
         // Log Error first.
         _logger.LogError(ToExceptionLogMessage(context.HttpContext.Request, context.Exception));
 
-        if (context.Exception is ApiException exception) context.Result = HandleApiException(exception, context.HttpContext);
+        if (context.Exception is ApiException exception)
+        {
+            context.Result = HandleApiException(exception, context.HttpContext);
+        }
         else
         {
             context.Result = new ObjectResult(new ErrorResponse
@@ -75,7 +78,10 @@ public class GlobalExceptionFilter : ExceptionFilterAttribute
 
         stringBuilder.AppendLine($"Exception Message: {exception.Message}");
         if (exception is ApiException apiException)
+        {
             stringBuilder.AppendLine($"Exception type is ApiException, StatusCode: {apiException.StatusCode}");
+        }
+
         stringBuilder.AppendLine($"Exception StackTrace: {exception.StackTrace}");
 
         stringBuilder.AppendLine($"End of error log for request id: {request.HttpContext.TraceIdentifier}");

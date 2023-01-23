@@ -2,7 +2,6 @@ using System.Reflection;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Modules.Account.Core.Models.Data;
-using Modules.Account.Core.Services;
 using Modules.Account.Core.Services.Authentication;
 using Modules.Account.Core.Services.Register;
 
