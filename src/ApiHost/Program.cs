@@ -36,6 +36,14 @@ if (app.Environment.IsTestEnvironment())
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
+app.UseCors(a =>
+{
+    a.SetIsOriginAllowed(_ => true)
+     .AllowAnyHeader()
+     .AllowAnyMethod()
+     .AllowCredentials();
+});
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
