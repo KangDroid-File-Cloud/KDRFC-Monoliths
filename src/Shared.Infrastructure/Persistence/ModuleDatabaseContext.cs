@@ -12,7 +12,11 @@ public abstract class ModuleDatabaseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        if (!string.IsNullOrWhiteSpace(Schema)) modelBuilder.HasDefaultSchema(Schema);
+        if (!string.IsNullOrWhiteSpace(Schema))
+        {
+            modelBuilder.HasDefaultSchema(Schema);
+        }
+
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
     }

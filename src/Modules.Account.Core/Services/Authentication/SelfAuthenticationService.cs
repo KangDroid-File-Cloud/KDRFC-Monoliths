@@ -32,7 +32,9 @@ public class SelfAuthenticationService : IAuthenticationService
 
         // Self-Provider: Verify Password (TODO: Hash)
         if (credential.Key != loginCommand.AuthCode)
+        {
             throw new ApiException(HttpStatusCode.Unauthorized, "Login failed: Please check login information again.");
+        }
 
         return credential;
     }

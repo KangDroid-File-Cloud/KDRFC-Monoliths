@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 
 namespace Shared.Infrastructure.Controllers;
 
-internal class InternalControllerFeatureProvider: ControllerFeatureProvider
+internal class InternalControllerFeatureProvider : ControllerFeatureProvider
 {
     protected override bool IsController(TypeInfo typeInfo)
     {
@@ -12,18 +12,22 @@ internal class InternalControllerFeatureProvider: ControllerFeatureProvider
         {
             return false;
         }
+
         if (typeInfo.IsAbstract)
         {
             return false;
         }
+
         if (typeInfo.ContainsGenericParameters)
         {
             return false;
         }
+
         if (typeInfo.IsDefined(typeof(NonControllerAttribute)))
         {
             return false;
         }
+
         return typeInfo.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase) ||
                typeInfo.IsDefined(typeof(ControllerAttribute));
     }

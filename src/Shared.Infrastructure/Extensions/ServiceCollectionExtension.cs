@@ -46,7 +46,10 @@ public static class ServiceCollectionExtension
             foreach (var eachList in includedList)
             {
                 var path = Path.Combine(AppContext.BaseDirectory, eachList);
-                if (File.Exists(path)) options.IncludeXmlComments(path);
+                if (File.Exists(path))
+                {
+                    options.IncludeXmlComments(path);
+                }
             }
         });
         serviceCollection.AddSwaggerGenNewtonsoftSupport();
@@ -69,7 +72,9 @@ public static class ServiceCollectionExtension
                                  .AddPrometheusExporter();
 
                              if (Convert.ToBoolean(configuration["EnableConsoleMetricsExporter"]))
+                             {
                                  builder.AddConsoleExporter();
+                             }
                          })
                          .StartWithHost();
 

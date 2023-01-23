@@ -13,13 +13,17 @@ namespace Modules.Account.Core.Services.Authentication;
 
 public class GoogleAccessTokenResponse
 {
-    [JsonProperty("access_token")] public string AccessToken { get; set; }
+    [JsonProperty("access_token")]
+    public string AccessToken { get; set; }
 }
 
 public class GoogleMeResponse
 {
-    [JsonProperty("email")] public string Email { get; set; }
-    [JsonProperty("id")] public string Id { get; set; }
+    [JsonProperty("email")]
+    public string Email { get; set; }
+
+    [JsonProperty("id")]
+    public string Id { get; set; }
 }
 
 [ExcludeFromCodeCoverage]

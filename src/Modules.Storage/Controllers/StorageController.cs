@@ -149,7 +149,10 @@ public class StorageController : ControllerBase
         var contextAccount = HttpContext.GetContextAccount()!;
 
         // Make sure we do not support deleting root blob via this api.
-        if (contextAccount.RootId == blobId) throw new ApiException(HttpStatusCode.BadRequest, "Cannot delete root blob!");
+        if (contextAccount.RootId == blobId)
+        {
+            throw new ApiException(HttpStatusCode.BadRequest, "Cannot delete root blob!");
+        }
 
         // Pre Validate & Execute
         await _mediator.Send(new DeleteBlobByIdCommand

@@ -34,7 +34,9 @@ public class CacheService : ICacheService
             // 2 - 1. Set Cache Value
             item = await valueFactory();
             if (item != null)
+            {
                 await CacheDatabase.StringSetAsync(key, JsonConvert.SerializeObject(item), expiry ?? TimeSpan.FromMinutes(10));
+            }
         }
         else
         {

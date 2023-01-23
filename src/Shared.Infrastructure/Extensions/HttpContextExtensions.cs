@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Shared.Infrastructure.Filters;
 using Shared.Models;
 
 namespace Shared.Infrastructure.Extensions;
