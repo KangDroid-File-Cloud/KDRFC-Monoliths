@@ -52,7 +52,7 @@ public class GoogleAuthenticationService : OAuthServiceBase
             new Dictionary<string, string>
             {
                 ["grant_type"] = "authorization_code",
-                ["redirect_uri"] = "http://localhost:3000/auth/google",
+                ["redirect_uri"] = "postmessage",
                 ["client_id"] = _googleClientId,
                 ["client_secret"] = _googleClientSecret,
                 ["code"] = authCode
