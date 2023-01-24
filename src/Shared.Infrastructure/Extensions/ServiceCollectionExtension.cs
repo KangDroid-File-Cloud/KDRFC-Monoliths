@@ -9,6 +9,7 @@ using Shared.Infrastructure.Controllers;
 using Shared.Infrastructure.Filters;
 using Shared.Infrastructure.Persistence;
 using StackExchange.Redis;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Shared.Infrastructure.Extensions;
 
@@ -26,6 +27,8 @@ public static class ServiceCollectionExtension
         serviceCollection.AddEndpointsApiExplorer();
         serviceCollection.AddSwaggerGen(options =>
         {
+            options.CustomOperationIds(description =>
+                description.TryGetMethodInfo(out var methodInfo) ? methodInfo.Name : null);
             options.SwaggerDoc("v1", new OpenApiInfo
             {
                 Version = "v1",
