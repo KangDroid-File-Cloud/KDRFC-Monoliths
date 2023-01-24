@@ -6,7 +6,7 @@ using Shared.Core.Commands;
 
 namespace Modules.Storage.Core.Commands.Handlers;
 
-public class ProvisionRootByIdCommandHandler : IRequestHandler<ProvisionRootByIdCommand, Unit>
+public class ProvisionRootByIdCommandHandler : IRequestHandler<ProvisionRootByIdCommand, string>
 {
     private readonly IGridFsRepository<BlobFile> _gridFsRepository;
 
@@ -21,7 +21,7 @@ public class ProvisionRootByIdCommandHandler : IRequestHandler<ProvisionRootById
     /// <param name="request">Provision Request Command(Cross Module Communication)</param>
     /// <param name="cancellationToken"></param>
     /// <returns>Provisioned Root Folder ID</returns>
-    public async Task<Unit> Handle(ProvisionRootByIdCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(ProvisionRootByIdCommand request, CancellationToken cancellationToken)
     {
         // Prepare Metadata
         var metadata = new BlobFile
@@ -33,8 +33,6 @@ public class ProvisionRootByIdCommandHandler : IRequestHandler<ProvisionRootById
         };
 
         // Upload to GridFS. 
-        await _gridFsRepository.UploadFileAsync(request.AccountId, metadata, Stream.Null);
-
-        return Unit.Value;
+        return await _gridFsRepository.UploadFileAsync(request.AccountId, metadata, Stream.Null);
     }
 }

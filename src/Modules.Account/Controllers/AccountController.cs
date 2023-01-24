@@ -25,15 +25,14 @@ public class AccountController : ControllerBase
     ///     Join(Register) to KDRFC Service.
     /// </summary>
     /// <param name="command">Join Account Request(Register Request Body)</param>
-    /// <response code="204">When succeed to register.</response>
+    /// <response code="200">When succeed to register.</response>
     /// <response code="409">When user already registered to our service.</response>
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccessTokenResponse))]
     [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ErrorResponse))]
     [HttpPost("join")]
     public async Task<IActionResult> JoinAccount(RegisterAccountCommand command)
     {
-        await _mediator.Send(command);
-        return NoContent();
+        return Ok(await _mediator.Send(command));
     }
 
     /// <summary>

@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using MediatR;
 using Modules.Account.Core.Models.Data;
+using Modules.Account.Core.Models.Responses;
 
 namespace Modules.Account.Core.Commands;
 
-public class RegisterAccountCommand : IRequest
+public class RegisterAccountCommand : IRequest<AccessTokenResponse>
 {
     /// <summary>
     ///     Nickname of User.

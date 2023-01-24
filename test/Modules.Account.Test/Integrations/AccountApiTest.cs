@@ -69,7 +69,7 @@ public class AccountApiTest : IDisposable
 
         // Check
         Assert.True(response.IsSuccessStatusCode);
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact(DisplayName = "POST /api/account/join: Join should return 409 Conflict when User tries to re-register user again.")]

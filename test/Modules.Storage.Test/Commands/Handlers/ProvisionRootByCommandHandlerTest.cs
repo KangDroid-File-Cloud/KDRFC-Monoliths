@@ -39,9 +39,12 @@ public class ProvisionRootByCommandHandlerTest
                              .ReturnsAsync("fileId");
 
         // Do
-        await _handler.Handle(request, default);
+        var response = await _handler.Handle(request, default);
 
         // Verify
         _mockGridFsRepository.VerifyAll();
+
+        // Check
+        Assert.Equal(response, "fileId");
     }
 }
