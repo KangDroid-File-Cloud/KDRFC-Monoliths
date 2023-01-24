@@ -47,7 +47,7 @@ public class RegisterAccountCommandHandler : IRequestHandler<RegisterAccountComm
             UserId = account.Id,
             Token = _jwtService.GenerateJwt(null, DateTime.UtcNow.AddDays(14))
         };
-        await _cacheService.SetItemAsync(AccountCacheKeys.RefreshTokenKey(refreshToken.Token), refreshToken,
+        await _cacheService.SetItemAsync(AccountCacheKeys.RefreshTokenKey(account.Id), refreshToken,
             TimeSpan.FromDays(14));
 
         return new AccessTokenResponse

@@ -2,8 +2,8 @@ namespace Modules.Account.Core.Models.Data;
 
 public static class AccountCacheKeys
 {
-    public static string RefreshTokenKey(string token)
+    public static string RefreshTokenKey(string userId)
     {
-        return $"RefreshToken/{token}";
+        return $"RefreshToken/{userId}";
     }
 }

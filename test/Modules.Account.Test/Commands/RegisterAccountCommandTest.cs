@@ -69,7 +69,7 @@ public class RegisterAccountCommandTest
         _mockJwtService.Setup(a => a.GenerateJwt(null, It.IsAny<DateTime>()))
                        .Returns("refreshToken");
         _mockCacheService.Setup(a =>
-            a.SetItemAsync(AccountCacheKeys.RefreshTokenKey("refreshToken"), It.IsAny<object>(), It.IsAny<TimeSpan>()));
+            a.SetItemAsync(AccountCacheKeys.RefreshTokenKey(mockAccount.Id), It.IsAny<object>(), It.IsAny<TimeSpan>()));
 
         // Do
         var response = await _commandHandler.Handle(request, default);

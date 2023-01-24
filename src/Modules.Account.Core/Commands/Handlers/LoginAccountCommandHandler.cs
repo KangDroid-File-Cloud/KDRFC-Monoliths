@@ -42,12 +42,13 @@ public class LoginAccountCommandHandler : IRequestHandler<LoginCommand, AccessTo
         var jwt = _jwtService.GenerateAccessToken(credential.Account, credential.AuthenticationProvider, rootId);
 
         // Create Refresh Token
-        var refreshToken = new RefreshToken
-        {
-            UserId = credential.UserId,
-            Token = _jwtService.GenerateJwt(null, DateTime.UtcNow.AddDays(14))
-        };
-        await _cacheService.SetItemAsync(AccountCacheKeys.RefreshTokenKey(refreshToken.Token), refreshToken,
+        var refreshToken = await _cacheService.GetItemOrCreateAsync(AccountCacheKeys.RefreshTokenKey(credential.UserId), () =>
+            Task.FromResult(new RefreshToken
+            {
+                UserId = credential.UserId,
+                Token = _jwtService.GenerateJwt(null, DateTime.UtcNow.AddDays(14))
+            }), TimeSpan.FromDays(14));
+        await _cacheService.SetItemAsync(AccountCacheKeys.RefreshTokenKey(credential.UserId), refreshToken,
             TimeSpan.FromDays(14));
 
         return new AccessTokenResponse

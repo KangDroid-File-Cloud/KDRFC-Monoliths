@@ -45,13 +45,15 @@ public class LoginCommandHandlerTest
             Email = "kangdroid@test.com",
             AuthCode = "testPassword@"
         };
+        var userId = Ulid.NewUlid().ToString();
         _mockAuthenticationService.Setup(a => a.AuthenticateAsync(loginCommand))
                                   .ReturnsAsync(new Credential
                                   {
+                                      UserId = userId,
                                       Account = new Core.Models.Data.Account
                                       {
                                           Email = loginCommand.Email,
-                                          Id = Ulid.NewUlid().ToString(),
+                                          Id = userId,
                                           IsDeleted = false,
                                           NickName = "KangDroid"
                                       },
@@ -63,10 +65,14 @@ public class LoginCommandHandlerTest
                      .ReturnsAsync("root");
         _mockJwtService.Setup(a => a.GenerateJwt(It.IsAny<List<Claim>>(), null))
                        .Returns("accessToken");
-        _mockJwtService.Setup(a => a.GenerateJwt(null, It.IsAny<DateTime>()))
-                       .Returns("refreshToken");
+        _mockCacheService
+            .Setup(a => a.GetItemOrCreateAsync(It.IsAny<string>(), It.IsAny<Func<Task<RefreshToken>>>(), It.IsAny<TimeSpan>()))
+            .ReturnsAsync(new RefreshToken
+            {
+                Token = "refreshToken"
+            });
         _mockCacheService.Setup(a =>
-            a.SetItemAsync(AccountCacheKeys.RefreshTokenKey("refreshToken"), It.IsAny<object>(), It.IsAny<TimeSpan>()));
+            a.SetItemAsync(AccountCacheKeys.RefreshTokenKey(userId), It.IsAny<object>(), It.IsAny<TimeSpan>()));
 
         // Do
         var response = await _commandHandler.Handle(loginCommand, default);
