@@ -27,7 +27,7 @@ public abstract class OAuthServiceBase : IAuthenticationService
 
     public async Task<Credential> AuthenticateAsync(LoginCommand loginCommand)
     {
-        var accessToken = await GetOAuthAccessTokenAsync(loginCommand.AuthCode);
+        var accessToken = await GetOAuthAccessTokenAsync(loginCommand.AuthCode, loginCommand.RequestHost);
         var oauthUserInfo = await GetOAuthUserInfoAsync(accessToken);
 
         // Find it
@@ -62,6 +62,6 @@ public abstract class OAuthServiceBase : IAuthenticationService
         return _jwtService.GenerateJwt(claims, DateTime.UtcNow.AddMinutes(10));
     }
 
-    protected abstract Task<string> GetOAuthAccessTokenAsync(string authCode);
+    protected abstract Task<string> GetOAuthAccessTokenAsync(string authCode, string oAuthRequestOrigin);
     protected abstract Task<OAuthLoginResult> GetOAuthUserInfoAsync(string accessToken);
 }

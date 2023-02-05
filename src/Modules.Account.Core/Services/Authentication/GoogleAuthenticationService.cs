@@ -45,14 +45,14 @@ public class GoogleAuthenticationService : OAuthServiceBase
         _googleClientSecret = configuration["OAuth:Google:ClientSecret"];
     }
 
-    protected async override Task<string> GetOAuthAccessTokenAsync(string authCode)
+    protected async override Task<string> GetOAuthAccessTokenAsync(string authCode, string requestOrigin)
     {
         var httpClient = _httpClientFactory.CreateClient();
         var response = await httpClient.PostAsync("https://oauth2.googleapis.com/token", new FormUrlEncodedContent(
             new Dictionary<string, string>
             {
                 ["grant_type"] = "authorization_code",
-                ["redirect_uri"] = "postmessage",
+                ["redirect_uri"] = $"{requestOrigin}/auth/redirect/google",
                 ["client_id"] = _googleClientId,
                 ["client_secret"] = _googleClientSecret,
                 ["code"] = authCode

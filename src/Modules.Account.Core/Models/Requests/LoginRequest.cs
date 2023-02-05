@@ -1,14 +1,15 @@
-using MediatR;
+using System.ComponentModel.DataAnnotations;
+using Modules.Account.Core.Commands;
 using Modules.Account.Core.Models.Data;
-using Modules.Account.Core.Models.Responses;
 
-namespace Modules.Account.Core.Commands;
+namespace Modules.Account.Core.Models.Requests;
 
-public class LoginCommand : IRequest<AccessTokenResponse>
+public class LoginRequest
 {
     /// <summary>
     ///     Authentication Provider
     /// </summary>
+    [Required]
     public AuthenticationProvider AuthenticationProvider { get; set; }
 
     /// <summary>
@@ -19,10 +20,17 @@ public class LoginCommand : IRequest<AccessTokenResponse>
     /// <summary>
     ///     Authentication ID(OAuth ID when OAuth, Password when Self)
     /// </summary>
+    [Required]
     public string AuthCode { get; set; }
 
-    /// <summary>
-    ///     Client Request Host
-    /// </summary>
-    public string RequestHost { get; set; }
+    public LoginCommand ToLoginCommand(string requestHost)
+    {
+        return new()
+        {
+            AuthenticationProvider = AuthenticationProvider,
+            Email = Email,
+            AuthCode = AuthCode,
+            RequestHost = requestHost
+        };
+    }
 }

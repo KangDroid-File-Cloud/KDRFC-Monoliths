@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Modules.Account.Core.Commands;
+using Modules.Account.Core.Models.Requests;
 using Modules.Account.Core.Models.Responses;
 using Shared.Infrastructure.Extensions;
 using Shared.Infrastructure.Filters;
@@ -45,9 +46,10 @@ public class AccountController : ControllerBase
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccessTokenResponse))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
-    public async Task<ActionResult<AccessTokenResponse>> LoginAccount(LoginCommand command)
+    public async Task<ActionResult<AccessTokenResponse>> LoginAccount(LoginRequest loginRequest)
     {
-        return Ok(await _mediator.Send(command));
+        var requestOrigin = HttpContext.Request.Headers.Origin.FirstOrDefault("http://localhost:5173");
+        return Ok(await _mediator.Send(loginRequest.ToLoginCommand(requestOrigin)));
     }
 
     /// <summary>
