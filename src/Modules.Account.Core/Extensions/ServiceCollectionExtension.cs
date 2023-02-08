@@ -17,12 +17,14 @@ public static class ServiceCollectionExtension
         // Register Authentication Provider.
         services.AddTransient<SelfAuthenticationService>();
         services.AddTransient<GoogleAuthenticationService>();
+        services.AddTransient<KakaoAuthenticationService>();
         services.AddScoped<AuthenticationProviderFactory>(serviceProvider => provider =>
         {
             return provider switch
             {
                 AuthenticationProvider.Self => serviceProvider.GetRequiredService<SelfAuthenticationService>(),
                 AuthenticationProvider.Google => serviceProvider.GetRequiredService<GoogleAuthenticationService>(),
+                AuthenticationProvider.Kakao => serviceProvider.GetRequiredService<KakaoAuthenticationService>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, "Unknown Provider")
             };
         });
@@ -36,6 +38,7 @@ public static class ServiceCollectionExtension
             {
                 AuthenticationProvider.Self => serviceProvider.GetRequiredService<SelfRegisterService>(),
                 AuthenticationProvider.Google => serviceProvider.GetRequiredService<OAuthRegisterService>(),
+                AuthenticationProvider.Kakao => serviceProvider.GetRequiredService<OAuthRegisterService>(),
                 _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, "Unknown Provider")
             };
         });

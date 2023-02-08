@@ -7,7 +7,8 @@ namespace Modules.Account.Core.Models.Data;
 public enum AuthenticationProvider
 {
     Self,
-    Google
+    Google,
+    Kakao
 }
 
 public class Credential
