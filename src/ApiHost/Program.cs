@@ -20,7 +20,8 @@ builder.Services.AddStorageModule(builder.Configuration);
 // Add Health Check
 builder.Services.AddHealthChecks()
        .AddDbContextCheck<AccountDbContext>()
-       .AddRedis(builder.Configuration.GetConnectionString("CacheConnection")!);
+       .AddRedis(builder.Configuration.GetConnectionString("CacheConnection")!)
+       .AddMongoDb(builder.Configuration.GetConnectionString("MongoDbConnection")!);
 
 var app = builder.Build();
 
