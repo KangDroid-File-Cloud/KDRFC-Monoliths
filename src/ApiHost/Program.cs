@@ -28,12 +28,8 @@ var app = builder.Build();
 // Migrate Account Module Database
 app.MigrateAccountModuleDatabase();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsTestEnvironment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
 

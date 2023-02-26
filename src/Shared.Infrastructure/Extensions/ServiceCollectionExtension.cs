@@ -54,6 +54,14 @@ public static class ServiceCollectionExtension
                     options.IncludeXmlComments(path);
                 }
             }
+
+            options.OperationFilter<SwaggerOperationFilter>();
+            options.AddSecurityDefinition("KDRFCAuthorization", new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer",
+                In = ParameterLocation.Header
+            });
         });
         serviceCollection.AddSwaggerGenNewtonsoftSupport();
 
