@@ -8,6 +8,11 @@ public class BlobProjection
     public string Id { get; set; }
 
     /// <summary>
+    ///     Blob Name
+    /// </summary>
+    public string Name { get; set; }
+
+    /// <summary>
     ///     File Length
     /// </summary>
     /// <remarks>

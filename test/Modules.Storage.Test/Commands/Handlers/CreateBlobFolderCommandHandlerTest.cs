@@ -52,6 +52,7 @@ public class CreateBlobFolderCommandHandlerTest
             _id = new ObjectId(createdFolderId),
             length = 100,
             uploadDate = DateTime.UtcNow,
+            filename = request.FolderName,
             metadata = new BlobFile
             {
                 BlobFileType = BlobFileType.Folder,
@@ -78,6 +79,7 @@ public class CreateBlobFolderCommandHandlerTest
         // Check
         Assert.Equal(createdFolderId, response.Id);
         Assert.Equal(request.ParentFolderId, response.ParentFolderId);
+        Assert.Equal(request.FolderName, response.Name);
     }
 
     [Fact(DisplayName =

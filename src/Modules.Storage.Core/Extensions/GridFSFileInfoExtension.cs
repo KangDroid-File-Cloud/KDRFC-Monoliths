@@ -14,6 +14,7 @@ public static class GridFSFileInfoExtension
         return new BlobProjection
         {
             Id = fileInfo.Id.ToString(),
+            Name = fileInfo.Filename,
             Length = fileInfo.Length,
             UploadDate = fileInfo.UploadDateTime,
             BlobFileType = blobMetadata.BlobFileType,

@@ -93,6 +93,7 @@ public class GetBlobDetailCommandHandlerTest
             _id = ObjectId.GenerateNewId(),
             length = 100,
             uploadDate = DateTime.UtcNow,
+            filename = "test",
             metadata = new BlobFile
             {
                 BlobFileType = BlobFileType.Folder,
@@ -113,5 +114,6 @@ public class GetBlobDetailCommandHandlerTest
         Assert.Equal(parentFolder._id.ToString(), blobProjection.Id);
         Assert.Equal(parentFolder.length, blobProjection.Length);
         Assert.Equal(parentFolder.metadata["parentFolderId"], blobProjection.ParentFolderId);
+        Assert.Equal("test", blobProjection.Name);
     }
 }

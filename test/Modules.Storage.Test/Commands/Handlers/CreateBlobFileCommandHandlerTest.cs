@@ -186,6 +186,7 @@ public class CreateBlobFileCommandHandlerTest
             _id = new ObjectId(uploadedId),
             length = 100,
             uploadDate = DateTime.UtcNow,
+            filename = request.FileName,
             metadata = new BlobFile
             {
                 BlobFileType = BlobFileType.File,
@@ -209,6 +210,7 @@ public class CreateBlobFileCommandHandlerTest
         // Check
         Assert.Equal(uploadedId, response.Id);
         Assert.Equal(parentFolder._id.ToString(), response.ParentFolderId);
+        Assert.Equal(request.FileName, response.Name);
         Assert.Equal(uploadFile.length, response.Length);
         Assert.Equal(BlobFileType.File, response.BlobFileType);
     }
