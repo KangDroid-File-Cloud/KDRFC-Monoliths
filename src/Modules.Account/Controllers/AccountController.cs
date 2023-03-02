@@ -43,9 +43,11 @@ public class AccountController : ControllerBase
     /// <returns></returns>
     /// <response code="200">When user successfully logged-in.</response>
     /// <response code="401">When user's credential information is not correct.</response>
+    /// <response code="404">OAuth Only, when user is not found.</response>
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccessTokenResponse))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(JoinTokenResponse))]
     public async Task<ActionResult<AccessTokenResponse>> LoginAccount(LoginRequest loginRequest)
     {
         var requestOrigin = HttpContext.Request.Headers.Origin.FirstOrDefault("http://localhost:5173");
