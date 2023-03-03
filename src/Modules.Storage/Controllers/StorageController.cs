@@ -95,6 +95,18 @@ public class StorageController : ControllerBase
         }));
     }
 
+    [HttpGet("{blobId}/resolve")]
+    [KDRFCAuthorization]
+    public async Task<IActionResult> ResolveBlobPathAsync(string blobId)
+    {
+        var contextAccount = HttpContext.GetContextAccount()!;
+        return Ok(await _mediator.Send(new ResolveBlobPathCommand
+        {
+            TargetBlobId = blobId,
+            UserId = contextAccount.AccountId
+        }));
+    }
+
     /// <summary>
     ///     Upload blob file to storage.
     /// </summary>
