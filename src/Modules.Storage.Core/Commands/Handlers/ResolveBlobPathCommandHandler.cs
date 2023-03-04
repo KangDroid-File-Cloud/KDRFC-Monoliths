@@ -22,16 +22,18 @@ public class ResolveBlobPathCommandHandler : IRequestHandler<ResolveBlobPathComm
         var targetList = new List<BlobProjection>();
 
         // Find Target File Data(First Data)
-        var targetFileData = (await _gridFsRepository.GetFileById(request.TargetBlobId))?.ToBlobProjection()
-                             ?? throw new ApiException(HttpStatusCode.NotFound,
-                                 $"Cannot find blob id: {request.TargetBlobId}");
+        var targetRawData = await _gridFsRepository.GetFileById(request.TargetBlobId)
+                            ?? throw new ApiException(HttpStatusCode.NotFound,
+                                $"Cannot find blob id: {request.TargetBlobId}");
+        var targetBlobFile = targetRawData.ToBlobFile();
+        var targetFileData = targetRawData.ToBlobProjection();
 
         // Check File Ownership
-        // if (targetFileData.OwnerId != request.UserId)
-        // {
-        //     throw new ApiException(HttpStatusCode.Forbidden,
-        //         $"Blob {request.TargetBlobId} is not user {request.UserId}'s one.");
-        // }
+        if (targetBlobFile.OwnerId != request.UserId)
+        {
+            throw new ApiException(HttpStatusCode.Forbidden,
+                $"Blob {request.TargetBlobId} is not user {request.UserId}'s one.");
+        }
 
         // Add first file to list
         targetList.Add(targetFileData);

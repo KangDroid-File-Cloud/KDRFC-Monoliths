@@ -373,6 +373,25 @@ public class StorageControllerTest : IDisposable
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact(DisplayName =
+        "GET /api/storage/blobId/resolve: ResolveBlobPathAsync should return 403 Forbidden when user tries to resolve other's blob.")]
+    public async Task Is_ResolveBlobPathAsync_Returns_403_Forbidden_When_User_Tries_To_Resolve_Other_Blob()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var firstUser = await httpClient.CreateTestUser();
+        var secondUser = await httpClient.CreateTestUser();
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", firstUser.AccessToken.AccessToken);
+        var response = await httpClient.GetAsync($"api/storage/{secondUser.AccessTokenInformation.RootId}/resolve");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
     [Fact(DisplayName = "GET /api/storage/blobId/resolve: ResolveBlobPathAsync should return 200 Ok with parent information.")]
     public async Task Is_ResolveBlobPathAsync_Returns_Ok_With_Parent_Information()
     {

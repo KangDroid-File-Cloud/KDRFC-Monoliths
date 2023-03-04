@@ -95,8 +95,19 @@ public class StorageController : ControllerBase
         }));
     }
 
+    /// <summary>
+    ///     Get Blob's Folder Information
+    /// </summary>
+    /// <param name="blobId">A blob ID to resolve path on.</param>
+    /// <returns></returns>
+    /// <response code="200">When successfully resolved path.</response>
+    /// <response code="404">When target blob is not found.</response>
+    /// <response code="403">When blob is not user's one.</response>
     [HttpGet("{blobId}/resolve")]
     [KDRFCAuthorization]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<BlobProjection>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
     public async Task<IActionResult> ResolveBlobPathAsync(string blobId)
     {
         var contextAccount = HttpContext.GetContextAccount()!;

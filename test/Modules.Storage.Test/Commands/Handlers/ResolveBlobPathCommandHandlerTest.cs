@@ -45,41 +45,42 @@ public class ResolveBlobPathCommandHandlerTest
         Assert.Equal(StatusCodes.Status404NotFound, exception.StatusCode);
     }
 
-    // [Fact(DisplayName =
-    //     "Handle: Handle should throw ApiException with Forbidden when user tries to resolve path other's blob.")]
-    // public async Task Is_Handle_Throws_ApiException_With_Forbidden_When_User_Tries_To_Resolve_Other_Blob()
-    // {
-    //     // Let
-    //     var request = new ResolveBlobPathCommand
-    //     {
-    //         UserId = Ulid.NewUlid().ToString(),
-    //         TargetBlobId = new ObjectId().ToString()
-    //     };
-    //     var parentFolder = new
-    //     {
-    //         _id = new ObjectId(request.TargetBlobId),
-    //         length = 100,
-    //         uploadDate = DateTime.UtcNow,
-    //         metadata = new BlobFile
-    //         {
-    //             BlobFileType = BlobFileType.File,
-    //             OwnerId = Ulid.NewUlid().ToString(),
-    //             ParentFolderId = ""
-    //         }.ToBsonDocument()
-    //     };
-    //     _mockGridFSRepository.Setup(a => a.GetFileById(request.TargetBlobId))
-    //                          .ReturnsAsync(new GridFSFileInfo(parentFolder.ToBsonDocument()));
-    //
-    //     // Do
-    //     var exception =
-    //         await Assert.ThrowsAnyAsync<ApiException>(() => _resolveBlobPathCommandHandler.Handle(request, default));
-    //
-    //     // Verify
-    //     _mockGridFSRepository.VerifyAll();
-    //
-    //     // Check
-    //     Assert.Equal(StatusCodes.Status403Forbidden, exception.StatusCode);
-    // }
+    [Fact(DisplayName =
+        "Handle: Handle should throw ApiException with Forbidden when user tries to resolve path other's blob.")]
+    public async Task Is_Handle_Throws_ApiException_With_Forbidden_When_User_Tries_To_Resolve_Other_Blob()
+    {
+        // Let
+        var request = new ResolveBlobPathCommand
+        {
+            UserId = Ulid.NewUlid().ToString(),
+            TargetBlobId = new ObjectId().ToString()
+        };
+        var parentFolder = new
+        {
+            _id = new ObjectId(request.TargetBlobId),
+            length = 100,
+            uploadDate = DateTime.UtcNow,
+            filename = "test",
+            metadata = new BlobFile
+            {
+                BlobFileType = BlobFileType.File,
+                OwnerId = Ulid.NewUlid().ToString(),
+                ParentFolderId = ""
+            }.ToBsonDocument()
+        };
+        _mockGridFSRepository.Setup(a => a.GetFileById(request.TargetBlobId))
+                             .ReturnsAsync(new GridFSFileInfo(parentFolder.ToBsonDocument()));
+
+        // Do
+        var exception =
+            await Assert.ThrowsAnyAsync<ApiException>(() => _resolveBlobPathCommandHandler.Handle(request, default));
+
+        // Verify
+        _mockGridFSRepository.VerifyAll();
+
+        // Check
+        Assert.Equal(StatusCodes.Status403Forbidden, exception.StatusCode);
+    }
 
     [Fact(DisplayName = "Handle: Handle should return list of blobFiles when successfully found full path of blob.")]
     public async Task Is_Handle_Returns_List_Of_BlobFiles_When_Successfully_Found_Full_Path()
