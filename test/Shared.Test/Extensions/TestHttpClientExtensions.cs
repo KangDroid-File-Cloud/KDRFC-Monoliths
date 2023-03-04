@@ -60,4 +60,16 @@ public static class TestHttpClientExtensions
         httpResponse.EnsureSuccessStatusCode();
         return await httpResponse.Content.ReadFromJsonAsync<BlobProjection>();
     }
+
+    public async static Task<BlobProjection> UploadFileAsync(this HttpClient httpClient, string accessToken, string fileName,
+                                                             string parentId, Stream stream)
+    {
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var formContent = new MultipartFormDataContent();
+        formContent.Add(new StringContent(parentId), "parentFolderId");
+        formContent.Add(new StreamContent(stream), "fileContents", fileName);
+        var uploadResponse = await httpClient.PostAsync("/api/storage/upload", formContent);
+
+        return await uploadResponse.Content.ReadFromJsonAsync<BlobProjection>();
+    }
 }
