@@ -53,4 +53,10 @@ public class GridFsFileRepository<TMetadata> : IGridFsRepository<TMetadata>
 
         await Task.WhenAll(taskList);
     }
+
+    public async Task<GridFSDownloadStream<ObjectId>> OpenDownloadStreamAsync(
+        string id, CancellationToken cancellationToken = default)
+    {
+        return await _gridFsBucket.OpenDownloadStreamAsync(new ObjectId(id), cancellationToken: cancellationToken);
+    }
 }

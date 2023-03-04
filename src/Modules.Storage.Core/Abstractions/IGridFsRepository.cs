@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 
@@ -11,4 +12,7 @@ public interface IGridFsRepository<TMetadata>
     public Task<GridFSFileInfo?> GetFileById(string id);
 
     public Task DeleteManyAsync(FilterDefinition<GridFSFileInfo> filter);
+
+    public Task<GridFSDownloadStream<ObjectId>> OpenDownloadStreamAsync(
+        string id, CancellationToken cancellationToken = default);
 }
