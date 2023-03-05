@@ -12,7 +12,7 @@ public class DownloadBlobFileCommand : IRequest<GridFSDownloadStream<ObjectId>>
     public string BlobId { get; set; }
 
     /// <summary>
-    ///     Blob Owner, userId
+    ///     Blob Access Token
     /// </summary>
-    public string UserId { get; set; }
+    public string BlobAccessToken { get; set; }
 }

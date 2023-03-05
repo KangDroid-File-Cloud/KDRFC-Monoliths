@@ -122,23 +122,19 @@ public class StorageController : ControllerBase
     ///     Download Blob File
     /// </summary>
     /// <param name="blobId">A blob ID to download file</param>
+    /// <param name="blobAccessToken">A Blob Access Token</param>
     /// <returns></returns>
     /// <response code="200">When Successfully downloaded file.</response>
-    /// <response code="400">When user tries to download folder.(Not Supported)</response>
-    /// <response code="404">When target blob is not found.</response>
-    /// <response code="403">When blob is not user's one.</response>
+    /// <response code="401">When one of blob access token is invalid.</response>
     [HttpGet("{blobId}/download")]
-    [KDRFCAuthorization]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FileResult))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
-    public async Task<FileResult> DownloadBlobAsync(string blobId)
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+    public async Task<FileResult> DownloadBlobAsync(string blobId, string blobAccessToken)
     {
-        var contextAccount = HttpContext.GetContextAccount()!;
         var response = await _mediator.Send(new DownloadBlobFileCommand
         {
             BlobId = blobId,
-            UserId = contextAccount.AccountId
+            BlobAccessToken = blobAccessToken
         });
 
         return File(response, "application/octet-stream", response.FileInfo.Filename);

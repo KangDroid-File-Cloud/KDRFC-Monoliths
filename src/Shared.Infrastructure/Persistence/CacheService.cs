@@ -21,6 +21,18 @@ public class CacheService : ICacheService
         await CacheDatabase.StringSetAsync(key, JsonConvert.SerializeObject(data), expiry ?? TimeSpan.FromMinutes(10));
     }
 
+    public async Task<TItem?> GetItemAsync<TItem>(string key)
+    {
+        var value = await CacheDatabase.StringGetAsync(key);
+
+        if (!value.HasValue)
+        {
+            return default;
+        }
+
+        return JsonConvert.DeserializeObject<TItem>(value);
+    }
+
     public async Task<TItem> GetItemOrCreateAsync<TItem>(string key, Func<Task<TItem>> valueFactory, TimeSpan? expiry = null)
     {
         TItem item;
