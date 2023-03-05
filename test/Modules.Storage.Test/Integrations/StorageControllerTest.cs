@@ -482,4 +482,80 @@ public class StorageControllerTest : IDisposable
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+
+    [Fact(DisplayName =
+        "GET /api/storage/blobId/download/eligible: DownloadBlobCheck should return 404 NotFound when targetBlob does not exists.")]
+    public async Task Is_DownloadBlobCheck_Returns_Not_Found_When_Blob_Not_Exists()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var user = await httpClient.CreateTestUser();
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.AccessToken.AccessToken);
+        var response = await httpClient.GetAsync($"api/storage/{ObjectId.GenerateNewId()}/download/eligible");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact(DisplayName =
+        "GET /api/storage/blobId/download/eligible: DownloadBlobCheck should return 403 Forbidden when blob is not user's one.")]
+    public async Task Is_DownloadBlobCheck_Returns_Forbidden_When_Blob_Not_Users_One()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var user = await httpClient.CreateTestUser();
+        var secondUser = await httpClient.CreateTestUser();
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", secondUser.AccessToken.AccessToken);
+        var response = await httpClient.GetAsync($"api/storage/{user.AccessTokenInformation.RootId}/download/eligible");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact(DisplayName =
+        "GET /api/storage/blobId/download/eligible: DownloadBlobCheck should return 400 BadRequest when blob type is Folder.")]
+    public async Task Is_DownloadBlobCheck_Returns_BadRequest_When_BlobType_Is_Folder()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var user = await httpClient.CreateTestUser();
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.AccessToken.AccessToken);
+        var response = await httpClient.GetAsync($"api/storage/{user.AccessTokenInformation.RootId}/download/eligible");
+
+        // Check
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact(DisplayName =
+        "GET /api/storage/blobId/download/eligible: DownloadBlobCheck should return 200 OK With File Response when succeeds.")]
+    public async Task Is_DownloadBlobCheck_Returns_200_Ok_File_Response_When_Succeeds()
+    {
+        // Let
+        var httpClient = _webApplicationFactory.CreateClient();
+        var user = await httpClient.CreateTestUser();
+        await using var stream = "test".CreateStream();
+        var uploadResponse = await httpClient.UploadFileAsync(user.AccessToken.AccessToken, "test.txt",
+            user.AccessTokenInformation.RootId,
+            "test".CreateStream());
+
+
+        // Do
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.AccessToken.AccessToken);
+        var response = await httpClient.GetAsync($"api/storage/{uploadResponse.Id}/download/eligible");
+
+        // Check
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 }
