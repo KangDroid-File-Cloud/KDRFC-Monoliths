@@ -72,4 +72,13 @@ public static class TestHttpClientExtensions
 
         return await uploadResponse.Content.ReadFromJsonAsync<BlobProjection>();
     }
+
+    public async static Task<BlobEligibleResponse> CheckBlobEligibleAsync(this HttpClient httpClient, string accessToken,
+                                                                          string blobId)
+    {
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await httpClient.GetAsync($"api/storage/{blobId}/download/eligible");
+
+        return await response.Content.ReadFromJsonAsync<BlobEligibleResponse>();
+    }
 }

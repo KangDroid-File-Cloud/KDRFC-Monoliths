@@ -145,6 +145,32 @@ public class StorageController : ControllerBase
     }
 
     /// <summary>
+    ///     Check file download is eligible, create temp token.
+    /// </summary>
+    /// <param name="blobId">A blob ID to download file</param>
+    /// <returns></returns>
+    /// <response code="200">When Successfully validated eligibility.</response>
+    /// <response code="400">When user tries to download folder.(Not Supported)</response>
+    /// <response code="404">When target blob is not found.</response>
+    /// <response code="403">When blob is not user's one.</response>
+    [HttpGet("{blobId}/download/eligible")]
+    [KDRFCAuthorization]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BlobEligibleResponse))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
+    public async Task<IActionResult> DownloadBlobCheck(string blobId)
+    {
+        var contextAccount = HttpContext.GetContextAccount()!;
+
+        return Ok(await _mediator.Send(new CheckBlobEligibleCommand
+        {
+            UserId = contextAccount.AccountId,
+            BlobId = blobId
+        }));
+    }
+
+    /// <summary>
     ///     Upload blob file to storage.
     /// </summary>
     /// <param name="blobFileRequest">A Form, Blob File Request</param>
